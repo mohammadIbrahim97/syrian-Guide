@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import SearchableGuides from '@/components/SearchableGuides';
 import NavActions from '@/components/NavActions';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   // Fetch initial guides on the server for fast first paint
   const initialGuides = await prisma.guide.findMany({
