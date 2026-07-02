@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Next.js Frontend & Python Backend hybrid container
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Next.js
+      - "8000:8000" # Python services
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://postgres:syriaguide2026@db:5432/syriaguide?schema=public
+      - NEXTAUTH_SECRET=dein_super_geheimnis_32_zeichen
+      - NODE_ENV=development
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # PostgreSQL Database container
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=syriaguide2026
+      - POSTGRES_DB=syriaguide
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d syriaguide"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

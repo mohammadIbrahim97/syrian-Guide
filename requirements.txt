@@ -1,0 +1,8 @@
+# Python packages needed for development, local agent tooling, and SDK integrations
+antigravity-sdk>=1.0.0
+prisma>=0.10.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0

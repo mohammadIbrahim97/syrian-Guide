@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SyriaGuide Design System — Premium Brand Documentation</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Design System Specific Enhancements */
+    .ds-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-success);
+      margin-left: 6px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--sz-12);
+      margin-bottom: var(--sz-12);
+      font-size: 14px;
+      color: var(--neutral-gray);
+    }
+
+    .checklist-icon {
+      color: var(--color-success);
+      font-weight: bold;
+    }
+
+    .playground-input-wrap {
+      display: flex;
+      gap: var(--sz-12);
+      margin-bottom: var(--sz-24);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* CSS Loading Spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s ease-in-out infinite;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="layout-wrapper">
+    <!-- Design System Sidebar -->
+    <aside class="ds-sidebar">
+      <div class="ds-brand">
+        <h1 class="ds-logo">Syria<span>Guide</span></h1>
+        <div class="ds-meta">Design System v1.1 <span class="ds-indicator"></span></div>
+      </div>
+
+      <nav>
+        <div class="ds-nav-title">System Token Foundations</div>
+        <ul class="ds-menu">
+          <li><a href="#principles" class="ds-menu-link">Principles</a></li>
+          <li><a href="#colors" class="ds-menu-link">Color Tokens</a></li>
+          <li><a href="#typography" class="ds-menu-link">Typography</a></li>
+          <li><a href="#spacing" class="ds-menu-link">Spacing Grid</a></li>
+          <li><a href="#elevation" class="ds-menu-link">Shadows</a></li>
+        </ul>
+
+        <div class="ds-nav-title" style="margin-top: var(--sz-24);">UI Components</div>
+        <ul class="ds-menu">
+          <li><a href="#buttons" class="ds-menu-link">Buttons & CTA</a></li>
+          <li><a href="#cards" class="ds-menu-link">Guide Cards</a></li>
+          <li><a href="#forms" class="ds-menu-link">Form Fields</a></li>
+          <li><a href="#badges" class="ds-menu-link">Badges</a></li>
+          <li><a href="#navigation" class="ds-menu-link">Navbar Mocks</a></li>
+        </ul>
+
+        <div class="ds-nav-title" style="margin-top: var(--sz-24);">Accessibility & QA</div>
+        <ul class="ds-menu">
+          <li><a href="#icons" class="ds-menu-link">Icons</a></li>
+          <li><a href="#guidelines" class="ds-menu-link">Guidelines Audit</a></li>
+        </ul>
+      </nav>
+
+      <div
+        style="margin-top: auto; font-size: 12px; color: var(--neutral-muted); border-top: 1px solid var(--neutral-border); padding-top: var(--sz-16);">
+        Evolved from WithLocals brand DNA. Built for Syrian Campus Guides.
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="ds-main">
+
+      <!-- Introduction Section -->
+      <section id="principles" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Design Principles</h2>
+          <p class="section-desc">
+            SyriaGuide connects international travelers with local university student guides. The UI architecture
+            mirrors WithLocals' warm, pill-shaped design system while implementing refined color choices representing
+            Syrian heritage.
+          </p>
+        </div>
+
+        <div class="preview-box"
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--sz-24); background: transparent; border: none; box-shadow: none; padding: 0;">
+          <div class="wl-card" style="padding: var(--sz-24); border-top: 4px solid var(--brand-coral);">
+            <h3 style="font-size: 18px; margin-bottom: var(--sz-8);">Warm Syrian Hospitality</h3>
+            <p style="font-size: 14px; color: var(--neutral-gray);">We use curved boundaries, soft shadows, and warm
+              cream palettes to convey the cultural hospitality ("Ahlan wa Sahlan") of Damascus and Aleppo.</p>
+          </div>
+          <div class="wl-card" style="padding: var(--sz-24); border-top: 4px solid var(--brand-indigo);">
+            <h3 style="font-size: 18px; margin-bottom: var(--sz-8);">Education & Trust</h3>
+            <p style="font-size: 14px; color: var(--neutral-gray);">Guides are verified university students. The design
+              showcases badges representing certifications, campus ratings, and language fluencies clearly.</p>
+          </div>
+          <div class="wl-card" style="padding: var(--sz-24); border-top: 4px solid var(--brand-sand);">
+            <h3 style="font-size: 18px; margin-bottom: var(--sz-8);">Accessible & Multilingual</h3>
+            <p style="font-size: 14px; color: var(--neutral-gray);">Dynamic alignment adjustments ensure headings, text
+              fields, and ratings remain visually balanced in both English (LTR) and Arabic (RTL).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Color Palette Section -->
+      <section id="colors" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Color Palette</h2>
+          <p class="section-desc">
+            Tokens reflecting the terracotta bricks of Syrian cities, the cobalt tiles of historic mosques, and
+            sandstone columns.
+          </p>
+        </div>
+
+        <div class="color-grid">
+          <!-- Primary Coral -->
+          <div class="color-card">
+            <div class="color-swatch" style="background-color: var(--brand-coral);"></div>
+            <div class="color-meta">
+              <h3 class="color-name">Syrian Amber</h3>
+              <code class="color-hex">#FF5E3A</code>
+              <p class="color-desc">Primary brand token. Used for critical CTAs, book buttons, and accent rings. Evolved
+                from WithLocals' primary orange.</p>
+            </div>
+          </div>
+
+          <!-- Secondary Blue -->
+          <div class="color-card">
+            <div class="color-swatch" style="background-color: var(--brand-indigo);"></div>
+            <div class="color-meta">
+              <h3 class="color-name">Damascus Blue</h3>
+              <code class="color-hex">#1A365D</code>
+              <p class="color-desc">Deep indigo. Used for headings, nav elements, footer background, and trust metrics.
+                Establishes brand stability.</p>
+            </div>
+          </div>
+
+          <!-- Accent Sand -->
+          <div class="color-card">
+            <div class="color-swatch" style="background-color: var(--brand-sand);"></div>
+            <div class="color-meta">
+              <h3 class="color-name">Desert Gold</h3>
+              <code class="color-hex">#DFB26C</code>
+              <p class="color-desc">Warm yellow gold. Used for review stars, premium tier indicators, and highlighted
+                tag borders.</p>
+            </div>
+          </div>
+
+          <!-- Neutral Text -->
+          <div class="color-card">
+            <div class="color-swatch" style="background-color: var(--neutral-dark);"></div>
+            <div class="color-meta">
+              <h3 class="color-name">Night Sky</h3>
+              <code class="color-hex">#1E1E24</code>
+              <p class="color-desc">Off-black charcoal. Primary text color, ensuring high legibility and contrast ratio
+                on light backgrounds.</p>
+            </div>
+          </div>
+
+          <!-- Warm Gray -->
+          <div class="color-card">
+            <div class="color-swatch"
+              style="background-color: var(--neutral-light); border-bottom: 1px solid var(--neutral-border);"></div>
+            <div class="color-meta">
+              <h3 class="color-name">Limestone</h3>
+              <code class="color-hex">#FBF9F6</code>
+              <p class="color-desc">Off-white background cream. Gives pages a soft, organic texture instead of stark
+                blinding white.</p>
+            </div>
+          </div>
+
+          <!-- White surface -->
+          <div class="color-card">
+            <div class="color-swatch"
+              style="background-color: var(--color-white); border-bottom: 1px solid var(--neutral-border);"></div>
+            <div class="color-meta">
+              <h3 class="color-name">Pure White</h3>
+              <code class="color-hex">#FFFFFF</code>
+              <p class="color-desc">Surface containers, profile cards, input backgrounds, and navigation wraps.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Typography Section -->
+      <section id="typography" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Typography</h2>
+          <p class="section-desc">
+            We pair <strong>Plus Jakarta Sans</strong> (humanist display sans-serif) with <strong>Inter</strong> (highly
+            legible body text) and <strong>Noto Sans Arabic</strong>.
+          </p>
+        </div>
+
+        <div class="preview-box">
+          <div class="playground-input-wrap">
+            <span class="field-label">Interactive Playground:</span>
+            <input type="text" id="type-playground-input" class="field-input" style="padding: 10px 14px; width: 320px;"
+              value="Explore Damascus Old City">
+          </div>
+
+          <div class="typography-row">
+            <div class="typography-label">Display Heading</div>
+            <div class="typography-sample text-display type-preview">Explore Damascus Old City</div>
+          </div>
+          <div class="typography-row">
+            <div class="typography-label">H1 Title</div>
+            <div class="typography-sample text-h1 type-preview">Explore Damascus Old City</div>
+          </div>
+          <div class="typography-row">
+            <div class="typography-label">H2 Subtitle</div>
+            <div class="typography-sample text-h2 type-preview">Explore Damascus Old City</div>
+          </div>
+          <div class="typography-row">
+            <div class="typography-label">H3 Section Title</div>
+            <div class="typography-sample text-h3 type-preview">Explore Damascus Old City</div>
+          </div>
+          <div class="typography-row">
+            <div class="typography-label">Body Text</div>
+            <div class="typography-sample text-body">
+              All guides on SyriaGuide are certified active university students verified by campus coordinators. Explore
+              historical landmarks and local stories.
+            </div>
+          </div>
+          <div class="typography-row">
+            <div class="typography-label">Arabic Text (Noto Sans)</div>
+            <div class="typography-sample text-arabic">
+              اكتشف دمشق القديمة مع طلاب الجامعات السورية. جولات حقيقية وتجارب لا تُنسى.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Spacing Section -->
+      <section id="spacing" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Spacing Scale</h2>
+          <p class="section-desc">
+            We use an 8px grid system to align layout paddings and element distributions.
+          </p>
+        </div>
+
+        <div class="preview-box">
+          <div class="spacing-container">
+            <div class="spacing-row">
+              <span class="spacing-desc">space-xs (8px)</span>
+              <div class="spacing-block" style="width: 8px;"></div>
+            </div>
+            <div class="spacing-row">
+              <span class="spacing-desc">space-sm (12px)</span>
+              <div class="spacing-block" style="width: 12px;"></div>
+            </div>
+            <div class="spacing-row">
+              <span class="spacing-desc">space-md (16px)</span>
+              <div class="spacing-block" style="width: 16px;"></div>
+            </div>
+            <div class="spacing-row">
+              <span class="spacing-desc">space-lg (24px)</span>
+              <div class="spacing-block" style="width: 24px;"></div>
+            </div>
+            <div class="spacing-row">
+              <span class="spacing-desc">space-xl (32px)</span>
+              <div class="spacing-block" style="width: 32px;"></div>
+            </div>
+            <div class="spacing-row">
+              <span class="spacing-desc">space-2xl (48px)</span>
+              <div class="spacing-block" style="width: 48px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Elevation Section -->
+      <section id="elevation" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Shadows & Elevation</h2>
+          <p class="section-desc">
+            Three levels of visual hierarchy and container elevation.
+          </p>
+        </div>
+
+        <div class="elevation-grid">
+          <div class="elevation-card elevation-1">
+            <h4 class="elevation-card-title">Elevation Low (sm)</h4>
+            <p class="elevation-card-desc">For static card containers, header tabs, and form borders.</p>
+          </div>
+          <div class="elevation-card elevation-2">
+            <h4 class="elevation-card-title">Elevation Medium (md)</h4>
+            <p class="elevation-card-desc">For clickable cards, interactive dropdown lists, and filter elements.</p>
+          </div>
+          <div class="elevation-card elevation-3">
+            <h4 class="elevation-card-title">Elevation High (lg)</h4>
+            <p class="elevation-card-desc">For popup modals, hover states of grid items, and alerts.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Buttons Section -->
+      <section id="buttons" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Buttons & CTA</h2>
+          <p class="section-desc">
+            Interactive pill-shaped buttons with refined scale and hover animations.
+          </p>
+        </div>
+
+        <h3 style="font-size: 18px; margin-bottom: var(--sz-16);">Button Themes</h3>
+        <div class="preview-box btn-row">
+          <button class="btn btn-pill btn-md btn-primary">Primary Action</button>
+          <button class="btn btn-pill btn-md btn-secondary">Secondary Action</button>
+          <button class="btn btn-pill btn-md btn-ghost">Ghost Link</button>
+          <button class="btn btn-pill btn-md btn-dark">Dark Action</button>
+          <button class="btn btn-pill btn-md btn-primary" disabled>Disabled Action</button>
+        </div>
+
+        <h3 style="font-size: 18px; margin-bottom: var(--sz-16); margin-top: var(--sz-24);">Loading & Micro-states</h3>
+        <div class="preview-box btn-row">
+          <button class="btn btn-pill btn-md btn-primary" style="opacity: 0.85; cursor: wait;">
+            <span class="spinner"></span>Processing…
+          </button>
+          <button class="btn btn-pill btn-md btn-secondary" style="opacity: 0.85; cursor: wait;">
+            <span class="spinner" style="border-top-color: var(--brand-indigo); border-width: 2px;"></span>Saving…
+          </button>
+        </div>
+
+        <h3 style="font-size: 18px; margin-bottom: var(--sz-16); margin-top: var(--sz-24);">Sizes Scale</h3>
+        <div class="preview-box btn-row">
+          <button class="btn btn-pill btn-sm btn-primary">Small Button</button>
+          <button class="btn btn-pill btn-md btn-primary">Medium Button</button>
+          <button class="btn btn-pill btn-lg btn-primary">Large Main Action</button>
+        </div>
+      </section>
+
+      <!-- Guide Cards Section -->
+      <section id="cards" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Guide Cards (WithLocals Theme)</h2>
+          <p class="section-desc">
+            High-fidelity cards representing our campus student guides. Designed for quick scanning.
+          </p>
+        </div>
+
+        <div class="card-grid">
+          <!-- Card 1 -->
+          <article class="wl-card">
+            <div class="wl-card-header">
+              <span class="wl-card-badge">✓ Campus Verified</span>
+              <!-- Cover image placeholder -->
+              <div
+                style="background: linear-gradient(135deg, var(--brand-indigo), var(--brand-coral)); width: 100%; height: 100%;">
+              </div>
+              <div class="wl-card-avatar-container">
+                <div
+                  style="width:100%; height:100%; background-color: var(--brand-coral); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 24px;">
+                  KS</div>
+              </div>
+            </div>
+            <div class="wl-card-body">
+              <h3 class="wl-card-title">Karam S.</h3>
+              <div class="wl-card-uni">🎓 Damascus University</div>
+              <div class="wl-card-meta">
+                <span>📍 Damascus, Old City</span>
+                <span class="wl-card-rating">⭐ 5.0 <span>(24 tours)</span></span>
+              </div>
+              <div class="wl-card-tags">
+                <span class="wl-card-tag">🗣️ Arabic (Native)</span>
+                <span class="wl-card-tag">🗣️ English (Fluent)</span>
+                <span class="wl-card-tag">🏰 Historic Sites</span>
+              </div>
+            </div>
+            <div class="wl-card-footer">
+              <div>
+                <span class="wl-card-price-label">Price per hour</span>
+                <span class="wl-card-price">$15<span
+                    style="font-size: 13px; font-weight: 500; color: var(--neutral-muted);">/hr</span></span>
+              </div>
+              <button class="btn btn-pill btn-sm btn-primary">Book Now</button>
+            </div>
+          </article>
+
+          <!-- Card 2 -->
+          <article class="wl-card">
+            <div class="wl-card-header">
+              <span class="wl-card-badge gold">⭐ Top Guide</span>
+              <!-- Cover image placeholder -->
+              <div
+                style="background: linear-gradient(135deg, var(--brand-sand), var(--brand-indigo)); width: 100%; height: 100%;">
+              </div>
+              <div class="wl-card-avatar-container">
+                <div
+                  style="width:100%; height:100%; background-color: var(--brand-secondary); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 24px;">
+                  MA</div>
+              </div>
+            </div>
+            <div class="wl-card-body">
+              <h3 class="wl-card-title">Mona A.</h3>
+              <div class="wl-card-uni">🎓 University of Aleppo</div>
+              <div class="wl-card-meta">
+                <span>📍 Aleppo, Citadel area</span>
+                <span class="wl-card-rating">⭐ 4.9 <span>(18 tours)</span></span>
+              </div>
+              <div class="wl-card-tags">
+                <span class="wl-card-tag">🗣️ Arabic (Native)</span>
+                <span class="wl-card-tag">🗣️ French (Fluent)</span>
+                <span class="wl-card-tag">🍲 Traditional Food</span>
+              </div>
+            </div>
+            <div class="wl-card-footer">
+              <div>
+                <span class="wl-card-price-label">Price per hour</span>
+                <span class="wl-card-price">$18<span
+                    style="font-size: 13px; font-weight: 500; color: var(--neutral-muted);">/hr</span></span>
+              </div>
+              <button class="btn btn-pill btn-sm btn-primary">Book Now</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Form Fields Section -->
+      <section id="forms" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Form Fields & Inputs</h2>
+          <p class="section-desc">
+            Clean and responsive form controls designed to prevent layout shifts.
+          </p>
+        </div>
+
+        <h3 style="font-size: 18px; margin-bottom: var(--sz-16);">Text Inputs & Dropdowns</h3>
+        <div class="preview-box form-grid">
+          <div class="field-group">
+            <label class="field-label">Student ID Number</label>
+            <input type="text" class="field-input" placeholder="e.g. Damascus-123456…">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Email Address (Error State)</label>
+            <input type="email" class="field-input error" value="wrong-email-format" spellcheck="false">
+            <span class="field-error-text">Please enter a valid email address.</span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">City Focus</label>
+            <select class="field-input">
+              <option>Damascus</option>
+              <option>Aleppo</option>
+              <option>Latakia</option>
+              <option>Homs</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 style="font-size: 18px; margin-bottom: var(--sz-16); margin-top: var(--sz-24);">Search Component</h3>
+        <div class="preview-box">
+          <div class="hero-search">
+            <div class="hero-search-input-wrap">
+              <span class="hero-search-icon">🔍</span>
+              <input type="text" class="hero-search-input"
+                placeholder="Where do you want to explore? Try 'Old City Damascus'…">
+            </div>
+            <button class="btn btn-pill btn-md btn-primary">Find Guides</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Badges Section -->
+      <section id="badges" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Badges & Tags</h2>
+          <p class="section-desc">
+            Informative tags denoting guide status, tour categories, and language skills.
+          </p>
+        </div>
+
+        <div class="preview-box btn-row">
+          <span class="tag-badge tag-badge-success">✓ Verified Student</span>
+          <span class="tag-badge tag-badge-warning">⏳ Pending Audit</span>
+          <span class="tag-badge tag-badge-error">✕ Inactive</span>
+          <span class="tag-badge tag-badge-neutral">🗣️ German (Fluent)</span>
+        </div>
+      </section>
+
+      <!-- Navbar Section -->
+      <section id="navigation" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Navbar Mocks</h2>
+          <p class="section-desc">
+            Mock navigations representing LTR desktop display views.
+          </p>
+        </div>
+
+        <div class="preview-box" style="padding: var(--sz-16);">
+          <div class="mock-nav">
+            <h1 class="ds-logo" style="font-size: 20px;">Syria<span>Guide</span></h1>
+            <ul class="mock-nav-menu">
+              <li><a href="#" class="mock-nav-link">Search Guides</a></li>
+              <li><a href="#" class="mock-nav-link">Destinations</a></li>
+              <li><a href="#" class="mock-nav-link">How It Works</a></li>
+            </ul>
+            <div class="mock-nav-actions">
+              <a href="#" class="mock-nav-link" style="font-size: 13px;">عربي</a>
+              <button class="btn btn-pill btn-sm btn-secondary">Login</button>
+              <button class="btn btn-pill btn-sm btn-primary">Apply as Guide</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Icons Section -->
+      <section id="icons" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Icon Style Guide</h2>
+          <p class="section-desc">
+            Consistent visual markers representing metadata fields.
+          </p>
+        </div>
+
+        <div class="preview-box"
+          style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--sz-16);">
+          <div
+            style="text-align:center; padding:var(--sz-16); background-color: var(--neutral-light); border-radius: var(--radius-md);">
+            <div style="font-size:32px; margin-bottom: 4px;">🎓</div>
+            <div style="font-size: 12px; font-weight:700; color:var(--brand-indigo)">University</div>
+          </div>
+          <div
+            style="text-align:center; padding:var(--sz-16); background-color: var(--neutral-light); border-radius: var(--radius-md);">
+            <div style="font-size:32px; margin-bottom: 4px;">📍</div>
+            <div style="font-size: 12px; font-weight:700; color:var(--brand-indigo)">Location</div>
+          </div>
+          <div
+            style="text-align:center; padding:var(--sz-16); background-color: var(--neutral-light); border-radius: var(--radius-md);">
+            <div style="font-size:32px; margin-bottom: 4px;">🗣️</div>
+            <div style="font-size: 12px; font-weight:700; color:var(--brand-indigo)">Language</div>
+          </div>
+          <div
+            style="text-align:center; padding:var(--sz-16); background-color: var(--neutral-light); border-radius: var(--radius-md);">
+            <div style="font-size:32px; margin-bottom: 4px;">⭐</div>
+            <div style="font-size: 12px; font-weight:700; color:var(--brand-indigo)">Star Rating</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Guidelines Compliance Section -->
+      <section id="guidelines" class="ds-section">
+        <div class="section-header">
+          <h2 class="section-title">Vercel Interface Guidelines Audit</h2>
+          <p class="section-desc">
+            Verification of SyriaGuide's design tokens and markup patterns against core web interface rules.
+          </p>
+        </div>
+
+        <div class="preview-box" style="background-color: var(--brand-indigo-soft); border-color: var(--brand-indigo);">
+          <h3 style="font-size: 20px; margin-bottom: var(--sz-16); color: var(--brand-indigo);">Guidelines Audit
+            Checklist</h3>
+
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Semantic Elements First:</strong> Custom buttons use HTML <code>&lt;button&gt;</code>, and
+              navigation links use <code>&lt;a&gt;</code> rather than un-accessible divs.
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Tabular Numbers:</strong> Price points use monospace or tabular numbers rendering to prevent
+              alignment jitter during listings.
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Visible Focus Rings:</strong> Focus styles are explicitly styled using <code>box-shadow</code> to
+              replace default browser rings cleanly.
+            </div>
+          </div>
+
+          <div class="checklist-item">
+            <span class="checklist-icon">✓</span>
+            <div>
+              <strong>Loading State Indicators:</strong> Actions during request periods append <code>…</code> and show
+              micro spinner animations.
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Navigation active highlights
+    const links = document.querySelectorAll('.ds-menu-link');
+    const sections = document.querySelectorAll('.ds-section');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        if (pageYOffset >= (sectionTop - 150)) {
+          current = section.getAttribute('id');
+        }
+      });
+
+      links.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').includes(current)) {
+          link.classList.add('active');
+        }
+      });
+    });
+
+    // Typography Playground code
+    const typeInput = document.getElementById('type-playground-input');
+    const typePreviews = document.querySelectorAll('.type-preview');
+    typeInput.addEventListener('input', (e) => {
+      typePreviews.forEach(preview => {
+        preview.textContent = e.target.value || "Explore Damascus Old City";
+      });
+    });
+  </script>
+</body>
+
+</html>
