@@ -16,9 +16,7 @@ export default function NavActions() {
         <span style={{ fontSize: '14px', color: 'var(--neutral-gray)' }}>…</span>
       ) : session?.user ? (
         <>
-          {(session.user as { role?: string }).role !== 'GUIDE' && (
-            <Link href="/apply" className="btn btn-pill btn-sm btn-primary">Become a host</Link>
-          )}
+
           <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--neutral-dark)' }}>
             {session.user.name || session.user.email?.split('@')[0]}
           </span>
@@ -33,7 +31,6 @@ export default function NavActions() {
       ) : (
         <>
           <Link href="/login" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500 }}>Log in</Link>
-          <Link href="/apply" className="btn btn-pill btn-sm btn-primary">Become a host</Link>
         </>
       )}
     </div>

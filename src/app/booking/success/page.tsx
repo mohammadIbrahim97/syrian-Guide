@@ -88,7 +88,7 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
             </>
           ) : (
             <p style={{ fontSize: '16px', color: 'var(--neutral-gray)', marginBottom: '32px' }}>
-              Your payment was processed successfully. You'll receive a confirmation shortly.
+              Your payment was processed successfully. You&apos;ll receive a confirmation shortly.
             </p>
           )}
 
