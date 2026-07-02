@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Mock the modules the route imports (no real DB / Stripe / session in tests)
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    guide: { findUnique: vi.fn() },
+    availabilitySlot: { findUnique: vi.fn(), updateMany: vi.fn() },
     booking: { create: vi.fn() },
+    $transaction: vi.fn(),
   },
 }))
 vi.mock('@/lib/stripe', () => ({
@@ -20,8 +21,10 @@ import { stripe } from '@/lib/stripe'
 import { auth } from '@/lib/auth'
 
 const mockedAuth = vi.mocked(auth)
-const mockedFindGuide = vi.mocked(prisma.guide.findUnique)
+const mockedFindSlot = vi.mocked(prisma.availabilitySlot.findUnique)
+const mockedClaimSlot = vi.mocked(prisma.availabilitySlot.updateMany)
 const mockedCreateBooking = vi.mocked(prisma.booking.create)
+const mockedTransaction = vi.mocked(prisma.$transaction)
 const mockedStripeCreate = vi.mocked(stripe.checkout.sessions.create)
 
 const studentGuide = {
@@ -42,6 +45,19 @@ const professionalGuide = {
   user: { name: 'Layla' },
 }
 
+// A free 4-hour slot in the future (09:00–13:00)
+function freeSlot(guide: typeof studentGuide | typeof professionalGuide) {
+  return {
+    id: 'slot_1',
+    guideId: guide.id,
+    date: new Date('2099-08-01T00:00:00.000Z'),
+    startTime: '09:00',
+    endTime: '13:00',
+    isBooked: false,
+    guide,
+  }
+}
+
 function checkoutRequest(body: Record<string, unknown>) {
   return new Request('http://localhost/api/checkout', {
     method: 'POST',
@@ -55,25 +71,57 @@ beforeEach(() => {
   mockedAuth.mockResolvedValue({ user: { id: 'user_1' } } as never)
   mockedStripeCreate.mockResolvedValue({ id: 'cs_test_1', url: 'https://stripe.test/pay' } as never)
   mockedCreateBooking.mockResolvedValue({} as never)
+  // The slot claim succeeds by default (one row updated)
+  mockedClaimSlot.mockResolvedValue({ count: 1 } as never)
+  // Run the transaction callback against the mocked prisma client
+  mockedTransaction.mockImplementation((cb: never) => (cb as (tx: typeof prisma) => unknown)(prisma) as never)
 })
 
-describe('POST /api/checkout (guide-centric booking)', () => {
+describe('POST /api/checkout (slot-consuming booking)', () => {
   it('returns 401 when not logged in', async () => {
     mockedAuth.mockResolvedValue(null as never)
-    const res = await POST(checkoutRequest({ guideId: 'g', date: '2026-08-01', durationHours: 2 }) as never)
+    const res = await POST(checkoutRequest({ guideId: 'g', slotId: 's', durationHours: 2 }) as never)
     expect(res.status).toBe(401)
   })
 
-  it('returns 404 when the guide does not exist', async () => {
-    mockedFindGuide.mockResolvedValue(null as never)
-    const res = await POST(checkoutRequest({ guideId: 'nope', date: '2026-08-01', durationHours: 2 }) as never)
+  it('returns 400 when guideId or slotId is missing', async () => {
+    const res = await POST(checkoutRequest({ slotId: 's', durationHours: 2 }) as never)
+    expect(res.status).toBe(400)
+    const res2 = await POST(checkoutRequest({ guideId: 'g', durationHours: 2 }) as never)
+    expect(res2.status).toBe(400)
+  })
+
+  it('returns 404 when the slot does not exist', async () => {
+    mockedFindSlot.mockResolvedValue(null as never)
+    const res = await POST(checkoutRequest({ guideId: 'g', slotId: 'nope', durationHours: 2 }) as never)
     expect(res.status).toBe(404)
   })
 
-  it('books a student guide hourly: totalPrice = hourlyRate × hours + 10% fee', async () => {
-    mockedFindGuide.mockResolvedValue(studentGuide as never)
+  it("returns 400 when the slot belongs to a different guide", async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(studentGuide) as never)
+    const res = await POST(checkoutRequest({ guideId: 'other_guide', slotId: 'slot_1', durationHours: 2 }) as never)
+    expect(res.status).toBe(400)
+    expect(mockedStripeCreate).not.toHaveBeenCalled()
+  })
 
-    const res = await POST(checkoutRequest({ guideId: 'guide_student', date: '2026-08-01', durationHours: 3 }) as never)
+  it('returns 409 when the slot is already booked', async () => {
+    mockedFindSlot.mockResolvedValue({ ...freeSlot(studentGuide), isBooked: true } as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 2 }) as never)
+    expect(res.status).toBe(409)
+    expect(mockedStripeCreate).not.toHaveBeenCalled()
+  })
+
+  it('returns 400 when the slot date is in the past', async () => {
+    mockedFindSlot.mockResolvedValue({ ...freeSlot(studentGuide), date: new Date('2020-01-01T00:00:00.000Z') } as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 2 }) as never)
+    expect(res.status).toBe(400)
+    expect(mockedStripeCreate).not.toHaveBeenCalled()
+  })
+
+  it('books a student for 3h in a 4h slot: price = rate × hours + 10% fee, slot claimed, date from slot', async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(studentGuide) as never)
+
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 3 }) as never)
     expect(res.status).toBe(200)
     const data = await res.json()
     expect(data.url).toBe('https://stripe.test/pay')
@@ -85,11 +133,19 @@ describe('POST /api/checkout (guide-centric booking)', () => {
     expect(stripeArgs.line_items[0].price_data.unit_amount).toBe(3000)
     expect(stripeArgs.line_items[1].price_data.unit_amount).toBe(300)
 
-    // Booking: PENDING, tied to the guide, hourly
+    // Slot claimed atomically: compare-and-set on isBooked
+    expect(mockedClaimSlot).toHaveBeenCalledWith({
+      where: { id: 'slot_1', isBooked: false },
+      data: { isBooked: true },
+    })
+
+    // Booking: tied to guide AND slot, date comes from the slot (server-side)
     expect(mockedCreateBooking).toHaveBeenCalledWith({
       data: expect.objectContaining({
         guideId: 'guide_student',
+        slotId: 'slot_1',
         userId: 'user_1',
+        date: new Date('2099-08-01T00:00:00.000Z'),
         durationHours: 3,
         totalPrice: 33,
         status: 'PENDING',
@@ -98,20 +154,35 @@ describe('POST /api/checkout (guide-centric booking)', () => {
     })
   })
 
-  it('rejects a student booking without durationHours', async () => {
-    mockedFindGuide.mockResolvedValue(studentGuide as never)
-    const res = await POST(checkoutRequest({ guideId: 'guide_student', date: '2026-08-01' }) as never)
+  it('rejects a student booking longer than the slot (5h in a 4h slot)', async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(studentGuide) as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 5 }) as never)
     expect(res.status).toBe(400)
     expect(mockedStripeCreate).not.toHaveBeenCalled()
   })
 
-  it('books a professional guide as a package: totalPrice = packagePrice × participants + 10% fee', async () => {
-    mockedFindGuide.mockResolvedValue(professionalGuide as never)
+  it('rejects a student booking without durationHours', async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(studentGuide) as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1' }) as never)
+    expect(res.status).toBe(400)
+  })
 
-    const res = await POST(checkoutRequest({ guideId: 'guide_pro', date: '2026-08-01', participants: 2 }) as never)
+  it('returns 409 when another booking wins the race (claim updates 0 rows)', async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(studentGuide) as never)
+    mockedClaimSlot.mockResolvedValue({ count: 0 } as never)
+
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 2 }) as never)
+    expect(res.status).toBe(409)
+    // The booking must never be created when the claim fails
+    expect(mockedCreateBooking).not.toHaveBeenCalled()
+  })
+
+  it('books a professional package: price = packagePrice × participants + 10% fee', async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(professionalGuide) as never)
+
+    const res = await POST(checkoutRequest({ guideId: 'guide_pro', slotId: 'slot_1', participants: 2 }) as never)
     expect(res.status).toBe(200)
 
-    // Stripe: 2 × €25 = €50 (5000 cents) + €5 fee (500 cents)
     const stripeArgs = mockedStripeCreate.mock.calls[0][0] as never as {
       line_items: { price_data: { unit_amount: number } }[]
     }
@@ -121,6 +192,7 @@ describe('POST /api/checkout (guide-centric booking)', () => {
     expect(mockedCreateBooking).toHaveBeenCalledWith({
       data: expect.objectContaining({
         guideId: 'guide_pro',
+        slotId: 'slot_1',
         participants: 2,
         totalPrice: 55,
         status: 'PENDING',
@@ -129,22 +201,16 @@ describe('POST /api/checkout (guide-centric booking)', () => {
   })
 
   it('rejects a package booking above maxGroupSize', async () => {
-    mockedFindGuide.mockResolvedValue(professionalGuide as never)
-    const res = await POST(checkoutRequest({ guideId: 'guide_pro', date: '2026-08-01', participants: 5 }) as never)
+    mockedFindSlot.mockResolvedValue(freeSlot(professionalGuide) as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_pro', slotId: 'slot_1', participants: 5 }) as never)
     expect(res.status).toBe(400)
     expect(mockedStripeCreate).not.toHaveBeenCalled()
   })
 
   it('rejects a professional booking without participants', async () => {
-    mockedFindGuide.mockResolvedValue(professionalGuide as never)
-    const res = await POST(checkoutRequest({ guideId: 'guide_pro', date: '2026-08-01' }) as never)
+    mockedFindSlot.mockResolvedValue(freeSlot(professionalGuide) as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_pro', slotId: 'slot_1' }) as never)
     expect(res.status).toBe(400)
-  })
-
-  it('rejects missing guideId or date', async () => {
-    const res = await POST(checkoutRequest({ date: '2026-08-01' }) as never)
-    expect(res.status).toBe(400)
-    const res2 = await POST(checkoutRequest({ guideId: 'g' }) as never)
-    expect(res2.status).toBe(400)
+    expect(mockedStripeCreate).not.toHaveBeenCalled()
   })
 })

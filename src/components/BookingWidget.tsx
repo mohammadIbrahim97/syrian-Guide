@@ -29,7 +29,7 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
 
   const isStudent = guideType === 'STUDENT';
 
-  const [date, setDate] = useState('');
+  const [slotId, setSlotId] = useState('');
   const [durationHours, setDurationHours] = useState(2);
   const [participants, setParticipants] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -37,21 +37,24 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
 
-  // Fetch availability slots
+  // Fetch availability slots; bumping slotsVersion re-fetches (e.g. after a 409)
+  const [slotsVersion, setSlotsVersion] = useState(0);
   useEffect(() => {
     const fetchSlots = async () => {
       try {
         const res = await fetch(`/api/availability?guideId=${guideId}`);
+        if (!res.ok) throw new Error('availability request failed');
         const data = await res.json();
         setSlots(data.slots || []);
       } catch (err) {
         console.error('Failed to fetch slots:', err);
+        setError('Could not load available dates. Please refresh the page.');
       } finally {
         setLoadingSlots(false);
       }
     };
     fetchSlots();
-  }, [guideId]);
+  }, [guideId, slotsVersion]);
 
   // Students are hired by the hour; professionals sell a fixed package per person
   const basePrice = isStudent
@@ -60,8 +63,34 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
   const serviceFee = Math.round(basePrice * 0.1 * 100) / 100;
   const grandTotal = basePrice + serviceFee;
 
-  // Get unique available dates
-  const availableDates = [...new Set(slots.map(s => s.date.split('T')[0]))];
+  // Hours in a slot like 09:00–13:00 (rounded down)
+  const slotLengthHours = (slot: Slot) => {
+    const [sh, sm] = slot.startTime.split(':').map(Number);
+    const [eh, em] = slot.endTime.split(':').map(Number);
+    return Math.floor((eh * 60 + em - (sh * 60 + sm)) / 60);
+  };
+
+  const selectedSlot = slots.find(s => s.id === slotId);
+  // A student can book at most the length of the chosen slot (capped at MAX_BOOKING_HOURS)
+  const maxHours = selectedSlot
+    ? Math.max(1, Math.min(MAX_BOOKING_HOURS, slotLengthHours(selectedSlot)))
+    : MAX_BOOKING_HOURS;
+
+  const formatSlot = (slot: Slot) => {
+    const day = new Date(slot.date).toLocaleDateString('en-US', {
+      weekday: 'short', month: 'long', day: 'numeric', timeZone: 'UTC',
+    });
+    return `${day} · ${slot.startTime}–${slot.endTime}`;
+  };
+
+  const handleSelectSlot = (id: string) => {
+    setSlotId(id);
+    const slot = slots.find(s => s.id === id);
+    if (slot && isStudent) {
+      // Keep the chosen hours within the new slot's length
+      setDurationHours(h => Math.min(h, Math.max(1, Math.min(MAX_BOOKING_HOURS, slotLengthHours(slot)))));
+    }
+  };
 
   const handleReserve = async () => {
     if (status !== 'authenticated') {
@@ -69,8 +98,8 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
       return;
     }
 
-    if (!date) {
-      setError('Please select a date');
+    if (!slotId) {
+      setError('Please select an available date');
       return;
     }
 
@@ -83,8 +112,8 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
           isStudent
-            ? { guideId, date, durationHours }
-            : { guideId, date, participants }
+            ? { guideId, slotId, durationHours }
+            : { guideId, slotId, participants }
         ),
       });
 
@@ -92,6 +121,11 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
 
       if (!res.ok) {
         setError(data.error || 'Booking failed');
+        if (res.status === 409) {
+          // Someone else won this slot — drop it and show what's still free
+          setSlotId('');
+          setSlotsVersion(v => v + 1);
+        }
         setLoading(false);
         return;
       }
@@ -132,41 +166,32 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
 
       <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Date</label>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Date & time</label>
           {loadingSlots ? (
             <div style={{ padding: '12px', fontSize: '14px', color: 'var(--neutral-gray)' }}>Loading available dates…</div>
-          ) : availableDates.length > 0 ? (
+          ) : slots.length > 0 ? (
             <select
-              value={date}
-              onChange={e => setDate(e.target.value)}
+              value={slotId}
+              onChange={e => handleSelectSlot(e.target.value)}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: '8px',
                 border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
               }}
             >
-              <option value="">Select a date</option>
-              {availableDates.map(d => (
-                <option key={d} value={d}>
-                  {new Date(d + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+              <option value="">Select an available slot</option>
+              {slots.map(slot => (
+                <option key={slot.id} value={slot.id}>
+                  {formatSlot(slot)}
                 </option>
               ))}
             </select>
           ) : (
-            <div>
-              <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                style={{
-                  width: '100%', padding: '12px 16px', borderRadius: '8px',
-                  border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
-                }}
-              />
-              <p style={{ fontSize: '12px', color: 'var(--neutral-gray)', marginTop: '4px' }}>
-                No pre-set slots — pick any date
-              </p>
-            </div>
+            <p style={{
+              padding: '12px 16px', borderRadius: '8px', backgroundColor: 'var(--neutral-light)',
+              fontSize: '14px', color: 'var(--neutral-gray)', margin: 0,
+            }}>
+              No available dates yet — this guide hasn&apos;t opened their calendar. Check back soon.
+            </p>
           )}
         </div>
 
@@ -181,7 +206,7 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
                 border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
               }}
             >
-              {[...Array(MAX_BOOKING_HOURS)].map((_, i) => (
+              {[...Array(maxHours)].map((_, i) => (
                 <option key={i} value={i + 1}>{i + 1} {i === 0 ? 'Hour' : 'Hours'}</option>
               ))}
             </select>
@@ -206,12 +231,12 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
 
         <button
           onClick={handleReserve}
-          disabled={loading}
+          disabled={loading || (!loadingSlots && slots.length === 0)}
           className="btn btn-primary"
           style={{
             width: '100%', marginTop: '16px', padding: '16px', fontSize: '16px',
-            borderRadius: '8px', opacity: loading ? 0.7 : 1,
-            cursor: loading ? 'not-allowed' : 'pointer',
+            borderRadius: '8px', opacity: loading || (!loadingSlots && slots.length === 0) ? 0.7 : 1,
+            cursor: loading || (!loadingSlots && slots.length === 0) ? 'not-allowed' : 'pointer',
           }}
         >
           {loading ? 'Redirecting to payment…' : status !== 'authenticated' ? 'Log in to Reserve' : 'Reserve'}

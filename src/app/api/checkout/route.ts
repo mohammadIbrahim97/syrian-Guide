@@ -3,34 +3,56 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
+// Length of a slot like 09:00–13:00 in whole hours (rounded down)
+function slotLengthHours(startTime: string, endTime: string): number {
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [eh, em] = endTime.split(":").map(Number);
+  return Math.floor((eh * 60 + em - (sh * 60 + sm)) / 60);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Please log in to book" }, { status: 401 });
     }
+    const userId = session.user.id;
 
-    const { guideId, date, durationHours, participants } = await request.json();
+    const { guideId, slotId, durationHours, participants } = await request.json();
 
-    if (!guideId || !date) {
+    if (!guideId || !slotId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Fetch guide details
-    const guide = await prisma.guide.findUnique({
-      where: { id: guideId },
-      include: { user: true },
+    // The slot decides the date; the client can only pick from real availability
+    const slot = await prisma.availabilitySlot.findUnique({
+      where: { id: slotId },
+      include: { guide: { include: { user: true } } },
     });
 
-    if (!guide) {
-      return NextResponse.json({ error: "Guide not found" }, { status: 404 });
+    if (!slot) {
+      return NextResponse.json({ error: "Availability slot not found" }, { status: 404 });
     }
+    if (slot.guideId !== guideId) {
+      return NextResponse.json({ error: "Slot does not belong to this guide" }, { status: 400 });
+    }
+    if (slot.isBooked) {
+      return NextResponse.json({ error: "This slot has just been booked" }, { status: 409 });
+    }
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    if (slot.date < today) {
+      return NextResponse.json({ error: "This slot is in the past" }, { status: 400 });
+    }
+
+    const guide = slot.guide;
 
     // Pricing depends on the guide type:
     // - STUDENT guides are hired by the hour (hourlyRate × durationHours)
     // - PROFESSIONAL guides sell a fixed package (packagePrice × participants)
     let totalPrice: number;
     let description: string;
+    const dateLabel = slot.date.toLocaleDateString("en-US", { dateStyle: "long", timeZone: "UTC" });
 
     if (guide.guideType === "STUDENT") {
       if (!Number.isInteger(durationHours) || durationHours < 1) {
@@ -39,11 +61,17 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      if (durationHours > slotLengthHours(slot.startTime, slot.endTime)) {
+        return NextResponse.json(
+          { error: `This slot is only ${slotLengthHours(slot.startTime, slot.endTime)} hour(s) long` },
+          { status: 400 }
+        );
+      }
       if (!guide.hourlyRate) {
         return NextResponse.json({ error: "This guide has no hourly rate set" }, { status: 400 });
       }
       totalPrice = guide.hourlyRate * durationHours;
-      description = `${durationHours} hour(s) with ${guide.user.name} · ${new Date(date).toLocaleDateString("en-US", { dateStyle: "long" })}`;
+      description = `${durationHours} hour(s) with ${guide.user.name} · ${dateLabel} from ${slot.startTime}`;
     } else {
       if (!Number.isInteger(participants) || participants < 1) {
         return NextResponse.json(
@@ -61,7 +89,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "This guide has no package price set" }, { status: 400 });
       }
       totalPrice = guide.packagePrice * participants;
-      description = `Tour package with ${guide.user.name} · ${participants} person(s) · ${new Date(date).toLocaleDateString("en-US", { dateStyle: "long" })}`;
+      description = `Tour package with ${guide.user.name} · ${participants} person(s) · ${dateLabel} from ${slot.startTime}`;
     }
 
     const serviceFee = Math.round(totalPrice * 0.1 * 100) / 100;
@@ -96,8 +124,9 @@ export async function POST(request: NextRequest) {
       ],
       metadata: {
         guideId,
-        userId: session.user.id,
-        date,
+        slotId,
+        userId,
+        date: slot.date.toISOString(),
         durationHours: durationHours ? String(durationHours) : "",
         participants: participants ? String(participants) : "1",
         totalPrice: String(grandTotal),
@@ -106,19 +135,39 @@ export async function POST(request: NextRequest) {
       cancel_url: `${process.env.NEXTAUTH_URL}/guides/${guideId}?cancelled=true`,
     });
 
-    // Create a PENDING booking
-    await prisma.booking.create({
-      data: {
-        guideId,
-        userId: session.user.id,
-        date: new Date(date),
-        durationHours: guide.guideType === "STUDENT" ? durationHours : null,
-        participants: guide.guideType === "PROFESSIONAL" ? participants : 1,
-        totalPrice: grandTotal,
-        status: "PENDING",
-        stripeSessionId: stripeSession.id,
-      },
-    });
+    // Claim the slot and create the booking atomically. The compare-and-set
+    // update is the double-booking guard: only one request can flip
+    // isBooked false -> true, and Booking.slotId is unique as a backstop.
+    try {
+      await prisma.$transaction(async (tx) => {
+        const claimed = await tx.availabilitySlot.updateMany({
+          where: { id: slotId, isBooked: false },
+          data: { isBooked: true },
+        });
+        if (claimed.count !== 1) {
+          throw new Error("SLOT_TAKEN");
+        }
+
+        await tx.booking.create({
+          data: {
+            guideId,
+            slotId,
+            userId,
+            date: slot.date,
+            durationHours: guide.guideType === "STUDENT" ? durationHours : null,
+            participants: guide.guideType === "PROFESSIONAL" ? participants : 1,
+            totalPrice: grandTotal,
+            status: "PENDING",
+            stripeSessionId: stripeSession.id,
+          },
+        });
+      });
+    } catch (err) {
+      if (err instanceof Error && err.message === "SLOT_TAKEN") {
+        return NextResponse.json({ error: "This slot has just been booked" }, { status: 409 });
+      }
+      throw err;
+    }
 
     return NextResponse.json({ url: stripeSession.url });
   } catch (error) {
