@@ -14,11 +14,7 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
         where: { stripeSessionId: session_id },
         data: { status: 'CONFIRMED' },
         include: {
-          tour: {
-            include: {
-              guide: { include: { user: true } },
-            },
-          },
+          guide: { include: { user: true } },
         },
       });
     } catch {
@@ -26,11 +22,7 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
       booking = await prisma.booking.findUnique({
         where: { stripeSessionId: session_id },
         include: {
-          tour: {
-            include: {
-              guide: { include: { user: true } },
-            },
-          },
+          guide: { include: { user: true } },
         },
       });
     }
@@ -59,8 +51,7 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
           {booking ? (
             <>
               <p style={{ fontSize: '16px', color: 'var(--neutral-gray)', marginBottom: '32px', lineHeight: 1.6 }}>
-                Your tour <strong>"{booking.tour.title}"</strong> with{' '}
-                <strong>{booking.tour.guide.user.name}</strong> has been booked for{' '}
+                Your tour with <strong>{booking.guide.user.name}</strong> has been booked for{' '}
                 <strong>{new Date(booking.date).toLocaleDateString('en-US', { dateStyle: 'long' })}</strong>.
               </p>
 
@@ -69,8 +60,17 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
                 display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', textAlign: 'left', marginBottom: '32px',
               }}>
                 <div>
-                  <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Participants</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{booking.participants} person(s)</div>
+                  {booking.durationHours ? (
+                    <>
+                      <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Duration</div>
+                      <div style={{ fontSize: '16px', fontWeight: 600 }}>{booking.durationHours} hour(s)</div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Participants</div>
+                      <div style={{ fontSize: '16px', fontWeight: 600 }}>{booking.participants} person(s)</div>
+                    </>
+                  )}
                 </div>
                 <div>
                   <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Total Paid</div>

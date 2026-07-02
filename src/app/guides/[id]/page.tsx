@@ -4,19 +4,17 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
 
-export default async function TourDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
-  const tour = await prisma.tour.findUnique({
+
+  const guide = await prisma.guide.findUnique({
     where: { id },
-    include: {
-      guide: {
-        include: { user: true }
-      }
-    }
+    include: { user: true }
   });
 
-  if (!tour) return notFound();
+  if (!guide) return notFound();
+
+  const isStudent = guide.guideType === 'STUDENT';
 
   return (
     <div className="layout-wrapper" style={{ flexDirection: 'column' }}>
@@ -27,9 +25,9 @@ export default async function TourDetailPage({ params }: { params: Promise<{ id:
             <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '90px', width: 'auto', objectFit: 'contain', margin: '-20px 0 -20px -10px' }} />
             </Link>
-            
+
             <div style={{ flex: 1, padding: '0 40px' }}></div>
-            
+
             <div className="mock-nav-actions">
               <Link href="/" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500 }}>All Guides</Link>
               <button className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}>EUR</button>
@@ -48,22 +46,22 @@ export default async function TourDetailPage({ params }: { params: Promise<{ id:
         {/* Content Area */}
         <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 var(--sz-32)', marginTop: '-80px', position: 'relative', zIndex: 10 }}>
           <div style={{ display: 'flex', gap: '48px', alignItems: 'flex-start' }}>
-            
+
             {/* Left Column (Details) */}
             <div style={{ flex: 1, backgroundColor: 'white', borderRadius: '16px', padding: '48px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
-              
+
               {/* Profile Header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'var(--brand-coral)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', fontWeight: 800, border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                  {tour.guide.user.name ? tour.guide.user.name.substring(0, 1).toUpperCase() : 'SG'}
+                  {guide.user.name ? guide.user.name.substring(0, 1).toUpperCase() : 'SG'}
                 </div>
                 <div>
-                  <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '0 0 8px 0', color: 'var(--neutral-dark)' }}>{tour.title}</h1>
+                  <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '0 0 8px 0', color: 'var(--neutral-dark)' }}>{guide.user.name}</h1>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--neutral-gray)', fontWeight: 500 }}>
-                    <span>Guided by {tour.guide.user.name}</span>
+                    <span>{isStudent ? 'Student guide' : 'Professional guide'} in {guide.city}</span>
                     <span>•</span>
-                    <span style={{ color: 'var(--brand-sand)' }}>★ {tour.guide.rating.toFixed(1)}</span>
-                    <span>({tour.guide.reviewCount} reviews)</span>
+                    <span style={{ color: 'var(--brand-sand)' }}>★ {guide.rating.toFixed(1)}</span>
+                    <span>({guide.reviewCount} reviews)</span>
                   </div>
                 </div>
               </div>
@@ -71,33 +69,34 @@ export default async function TourDetailPage({ params }: { params: Promise<{ id:
               <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '32px 0' }}></div>
 
               {/* Bio Section */}
-              <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>About {tour.guide.user.name?.split(' ')[0]}</h2>
-              <p style={{ fontSize: '16px', lineHeight: 1.8, color: 'var(--neutral-gray)', marginBottom: '32px' }}>
-                {tour.guide.bio}
-              </p>
-
-              {/* Tour Details */}
-              <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>What we will do</h2>
+              <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>About {guide.user.name?.split(' ')[0]}</h2>
               <p style={{ fontSize: '16px', lineHeight: 1.8, color: 'var(--neutral-gray)', marginBottom: '32px', whiteSpace: 'pre-wrap' }}>
-                {tour.description}
+                {guide.bio}
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', backgroundColor: 'var(--neutral-light)', padding: '24px', borderRadius: '12px' }}>
-                <div>
-                  <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Duration</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{tour.duration / 60} hours</div>
-                </div>
+                {isStudent ? (
+                  <div>
+                    <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>University</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.university ?? '—'}</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Package Duration</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.packageDuration ? `${guide.packageDuration / 60} hours` : '—'}</div>
+                  </div>
+                )}
                 <div>
                   <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Languages</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{tour.guide.languages.join(', ')}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.languages.join(', ')}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Group Size</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Up to {tour.maxGroupSize} people</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Up to {guide.maxGroupSize} people</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Location</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{tour.location}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.city}</div>
                 </div>
               </div>
 
@@ -105,12 +104,13 @@ export default async function TourDetailPage({ params }: { params: Promise<{ id:
 
             {/* Right Column (Booking Widget) */}
             <BookingWidget
-              tourId={tour.id}
-              price={tour.price}
-              maxGroupSize={tour.maxGroupSize}
-              guideId={tour.guideId}
-              rating={tour.guide.rating}
-              reviewCount={tour.guide.reviewCount}
+              guideId={guide.id}
+              guideType={guide.guideType}
+              hourlyRate={guide.hourlyRate}
+              packagePrice={guide.packagePrice}
+              maxGroupSize={guide.maxGroupSize}
+              rating={guide.rating}
+              reviewCount={guide.reviewCount}
             />
 
           </div>

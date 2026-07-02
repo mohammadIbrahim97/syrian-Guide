@@ -3,24 +3,22 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
-interface Tour {
+interface Guide {
   id: string;
-  title: string;
-  description: string;
-  price: number;
-  duration: number;
+  bio: string;
+  city: string;
+  languages: string[];
+  guideType: 'STUDENT' | 'PROFESSIONAL';
+  university: string | null;
+  hourlyRate: number | null;
+  packagePrice: number | null;
   maxGroupSize: number;
-  location: string;
-  guide: {
-    id: string;
-    rating: number;
-    reviewCount: number;
-    languages: string[];
-    isVerified: boolean;
-    user: {
-      name: string | null;
-      image: string | null;
-    };
+  rating: number;
+  reviewCount: number;
+  isVerified: boolean;
+  user: {
+    name: string | null;
+    image: string | null;
   };
 }
 
@@ -33,8 +31,8 @@ const PRICE_OPTIONS = [
   { label: 'Under €100', value: '100' },
 ];
 
-export default function SearchableGuides({ initialTours }: { initialTours: Tour[] }) {
-  const [tours, setTours] = useState<Tour[]>(initialTours);
+export default function SearchableGuides({ initialGuides }: { initialGuides: Guide[] }) {
+  const [guides, setGuides] = useState<Guide[]>(initialGuides);
   const [loading, setLoading] = useState(false);
 
   // Filter state
@@ -44,10 +42,10 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
   const [activeCity, setActiveCity] = useState('');
 
   // Debounce timer ref
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Fetch filtered results
-  const fetchTours = useCallback(async (query: string, langs: string[], price: string, city: string) => {
+  const fetchGuides = useCallback(async (query: string, langs: string[], price: string, city: string) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -56,11 +54,11 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
       if (price) params.set('maxPrice', price);
       if (city) params.set('city', city);
 
-      const res = await fetch(`/api/tours?${params.toString()}`);
+      const res = await fetch(`/api/guides?${params.toString()}`);
       const data = await res.json();
-      setTours(data.tours);
+      setGuides(data.guides);
     } catch (err) {
-      console.error('Failed to fetch tours:', err);
+      console.error('Failed to fetch guides:', err);
     } finally {
       setLoading(false);
     }
@@ -70,10 +68,10 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchTours(searchQuery, selectedLanguages, maxPrice, activeCity);
+      fetchGuides(searchQuery, selectedLanguages, maxPrice, activeCity);
     }, 300);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [searchQuery, selectedLanguages, maxPrice, activeCity, fetchTours]);
+  }, [searchQuery, selectedLanguages, maxPrice, activeCity, fetchGuides]);
 
   const toggleLanguage = (lang: string) => {
     setSelectedLanguages(prev =>
@@ -213,7 +211,7 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
           {/* Results count */}
           <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ fontSize: '15px', color: 'var(--neutral-gray)', margin: 0 }}>
-              {loading ? 'Searching…' : `${tours.length} guide${tours.length !== 1 ? 's' : ''} found`}
+              {loading ? 'Searching…' : `${guides.length} guide${guides.length !== 1 ? 's' : ''} found`}
             </p>
           </div>
 
@@ -228,11 +226,11 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
             </div>
           )}
 
-          {/* Tour Cards */}
+          {/* Guide Cards */}
           {!loading && (
             <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px' }}>
-              {tours.map((tour, index) => (
-                <Link href={`/tours/${tour.id}`} key={tour.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+              {guides.map((guide, index) => (
+                <Link href={`/guides/${guide.id}`} key={guide.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <article className={`wl-card animate-fade-up delay-${(index % 3 + 1) * 100}`}>
                     <div className="wl-card-header">
                       <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10, backgroundColor: 'white', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -243,7 +241,7 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
 
                       <div className="wl-card-avatar-container">
                         <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--brand-coral)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '20px' }}>
-                          {tour.guide.user.name ? tour.guide.user.name.substring(0, 1).toUpperCase() : 'SG'}
+                          {guide.user.name ? guide.user.name.substring(0, 1).toUpperCase() : 'SG'}
                         </div>
                       </div>
                     </div>
@@ -251,27 +249,33 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
                     <div className="wl-card-body">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                         <h3 className="wl-card-title" style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>
-                          With {tour.guide.user.name?.split(' ')[0]}
+                          With {guide.user.name?.split(' ')[0]}
                         </h3>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 600 }}>
                           <span style={{ color: 'var(--brand-sand)' }}>★</span>
-                          {tour.guide.rating.toFixed(1)} <span style={{ color: 'var(--neutral-gray)', fontWeight: 400 }}>({tour.guide.reviewCount})</span>
+                          {guide.rating.toFixed(1)} <span style={{ color: 'var(--neutral-gray)', fontWeight: 400 }}>({guide.reviewCount})</span>
                         </div>
                       </div>
 
                       <div style={{ fontSize: '15px', color: 'var(--neutral-dark)', marginBottom: '8px', fontWeight: 500 }}>
-                        {tour.title}
+                        {guide.guideType === 'STUDENT'
+                          ? `Student guide · ${guide.city}`
+                          : `Professional guide · ${guide.city}`}
                       </div>
 
                       <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '16px' }}>
-                        {tour.guide.languages.join(' · ')}
+                        {guide.languages.join(' · ')}
                       </div>
 
                       <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
                           <span style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>From </span>
-                          <span style={{ fontSize: '16px', fontWeight: 700 }}>€{tour.price}</span>
-                          <span style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}> / person</span>
+                          <span style={{ fontSize: '16px', fontWeight: 700 }}>
+                            €{guide.guideType === 'STUDENT' ? guide.hourlyRate : guide.packagePrice}
+                          </span>
+                          <span style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>
+                            {guide.guideType === 'STUDENT' ? ' / hour' : ' / person'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -279,7 +283,7 @@ export default function SearchableGuides({ initialTours }: { initialTours: Tour[
                 </Link>
               ))}
 
-              {tours.length === 0 && (
+              {guides.length === 0 && (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 0' }}>
                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
                   <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>No guides found</h3>

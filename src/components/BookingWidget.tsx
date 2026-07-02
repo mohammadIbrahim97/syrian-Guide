@@ -12,19 +12,25 @@ interface Slot {
 }
 
 interface BookingWidgetProps {
-  tourId: string;
-  price: number;
-  maxGroupSize: number;
   guideId: string;
+  guideType: 'STUDENT' | 'PROFESSIONAL';
+  hourlyRate: number | null;
+  packagePrice: number | null;
+  maxGroupSize: number;
   rating: number;
   reviewCount: number;
 }
 
-export default function BookingWidget({ tourId, price, maxGroupSize, guideId, rating, reviewCount }: BookingWidgetProps) {
-  const { data: session, status } = useSession();
+const MAX_BOOKING_HOURS = 8;
+
+export default function BookingWidget({ guideId, guideType, hourlyRate, packagePrice, maxGroupSize, rating, reviewCount }: BookingWidgetProps) {
+  const { status } = useSession();
   const router = useRouter();
 
+  const isStudent = guideType === 'STUDENT';
+
   const [date, setDate] = useState('');
+  const [durationHours, setDurationHours] = useState(2);
   const [participants, setParticipants] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,9 +53,12 @@ export default function BookingWidget({ tourId, price, maxGroupSize, guideId, ra
     fetchSlots();
   }, [guideId]);
 
-  const totalPrice = price * participants;
-  const serviceFee = Math.round(totalPrice * 0.1 * 100) / 100;
-  const grandTotal = totalPrice + serviceFee;
+  // Students are hired by the hour; professionals sell a fixed package per person
+  const basePrice = isStudent
+    ? (hourlyRate ?? 0) * durationHours
+    : (packagePrice ?? 0) * participants;
+  const serviceFee = Math.round(basePrice * 0.1 * 100) / 100;
+  const grandTotal = basePrice + serviceFee;
 
   // Get unique available dates
   const availableDates = [...new Set(slots.map(s => s.date.split('T')[0]))];
@@ -72,7 +81,11 @@ export default function BookingWidget({ tourId, price, maxGroupSize, guideId, ra
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tourId, date, participants }),
+        body: JSON.stringify(
+          isStudent
+            ? { guideId, date, durationHours }
+            : { guideId, date, participants }
+        ),
       });
 
       const data = await res.json();
@@ -98,7 +111,10 @@ export default function BookingWidget({ tourId, price, maxGroupSize, guideId, ra
       boxShadow: '0 8px 32px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.06)',
     }}>
       <h3 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 8px 0' }}>
-        €{price} <span style={{ fontSize: '16px', color: 'var(--neutral-gray)', fontWeight: 500 }}>/ person</span>
+        €{isStudent ? hourlyRate : packagePrice}{' '}
+        <span style={{ fontSize: '16px', color: 'var(--neutral-gray)', fontWeight: 500 }}>
+          {isStudent ? '/ hour' : '/ person'}
+        </span>
       </h3>
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 600, color: 'var(--neutral-gray)' }}>
         <span style={{ color: 'var(--brand-sand)' }}>★</span>
@@ -154,21 +170,39 @@ export default function BookingWidget({ tourId, price, maxGroupSize, guideId, ra
           )}
         </div>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Guests</label>
-          <select
-            value={participants}
-            onChange={e => setParticipants(Number(e.target.value))}
-            style={{
-              width: '100%', padding: '12px 16px', borderRadius: '8px',
-              border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
-            }}
-          >
-            {[...Array(maxGroupSize)].map((_, i) => (
-              <option key={i} value={i + 1}>{i + 1} {i === 0 ? 'Person' : 'People'}</option>
-            ))}
-          </select>
-        </div>
+        {isStudent ? (
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Hours</label>
+            <select
+              value={durationHours}
+              onChange={e => setDurationHours(Number(e.target.value))}
+              style={{
+                width: '100%', padding: '12px 16px', borderRadius: '8px',
+                border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
+              }}
+            >
+              {[...Array(MAX_BOOKING_HOURS)].map((_, i) => (
+                <option key={i} value={i + 1}>{i + 1} {i === 0 ? 'Hour' : 'Hours'}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Guests</label>
+            <select
+              value={participants}
+              onChange={e => setParticipants(Number(e.target.value))}
+              style={{
+                width: '100%', padding: '12px 16px', borderRadius: '8px',
+                border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
+              }}
+            >
+              {[...Array(maxGroupSize)].map((_, i) => (
+                <option key={i} value={i + 1}>{i + 1} {i === 0 ? 'Person' : 'People'}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <button
           onClick={handleReserve}
@@ -190,8 +224,12 @@ export default function BookingWidget({ tourId, price, maxGroupSize, guideId, ra
 
       <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', marginTop: '24px', paddingTop: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '15px', color: 'var(--neutral-gray)' }}>
-          <span>€{price} × {participants} person{participants > 1 ? 's' : ''}</span>
-          <span>€{totalPrice.toFixed(2)}</span>
+          <span>
+            {isStudent
+              ? `€${hourlyRate} × ${durationHours} hour${durationHours > 1 ? 's' : ''}`
+              : `€${packagePrice} × ${participants} person${participants > 1 ? 's' : ''}`}
+          </span>
+          <span>€{basePrice.toFixed(2)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '15px', color: 'var(--neutral-gray)' }}>
           <span>Service fee</span>
