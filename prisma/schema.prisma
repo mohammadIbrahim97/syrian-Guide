@@ -123,7 +123,8 @@ model AvailabilitySlot {
   isBooked  Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  guide Guide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  guide   Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  booking Booking?
 
   @@unique([guideId, date, startTime])
 }
@@ -135,6 +136,7 @@ model AvailabilitySlot {
 model Booking {
   id              String        @id @default(cuid())
   guideId         String
+  slotId          String?       @unique // the availability slot this booking consumes
   userId          String
   date            DateTime
   durationHours   Int?          // student (hourly) bookings
@@ -145,8 +147,9 @@ model Booking {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  guide Guide @relation(fields: [guideId], references: [id], onDelete: Restrict)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guide Guide             @relation(fields: [guideId], references: [id], onDelete: Restrict)
+  slot  AvailabilitySlot? @relation(fields: [slotId], references: [id], onDelete: Restrict)
+  user  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum BookingStatus {
