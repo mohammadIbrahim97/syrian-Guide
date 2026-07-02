@@ -1,7 +1,8 @@
 import { prisma } from '../src/lib/prisma'
 
 async function main() {
-  const guideUser = await prisma.user.upsert({
+  // Student guide: hired by the hour
+  await prisma.user.upsert({
     where: { email: 'ahmad.guide@example.com' },
     update: {},
     create: {
@@ -10,30 +11,44 @@ async function main() {
       role: 'GUIDE',
       guideProfile: {
         create: {
-          bio: 'Expert in Umayyad history.',
+          bio: 'History student and expert in Umayyad history. I love showing visitors the ancient alleys and the Umayyad Mosque.',
           city: 'Damascus',
           languages: ['Arabic', 'English'],
+          guideType: 'STUDENT',
+          university: 'Damascus University',
+          hourlyRate: 10.0,
           rating: 4.9,
           reviewCount: 42,
           isVerified: true
         }
       }
-    },
-    include: { guideProfile: true }
+    }
   })
 
-  if (guideUser.guideProfile) {
-    await prisma.tour.create({
-      data: {
-        title: 'Old Damascus Walking Tour',
-        description: 'Explore the ancient alleys and the Umayyad Mosque.',
-        price: 25.0,
-        duration: 180,
-        location: 'Damascus Old City',
-        guideId: guideUser.guideProfile.id
+  // Professional guide: sells a fixed tour package
+  await prisma.user.upsert({
+    where: { email: 'layla.guide@example.com' },
+    update: {},
+    create: {
+      name: 'Layla Haddad',
+      email: 'layla.guide@example.com',
+      role: 'GUIDE',
+      guideProfile: {
+        create: {
+          bio: 'Licensed tour guide working with Aleppo Heritage Tours. My signature package covers the Citadel, the old souks, and traditional food stops.',
+          city: 'Aleppo',
+          languages: ['Arabic', 'English', 'French'],
+          guideType: 'PROFESSIONAL',
+          packagePrice: 25.0,
+          packageDuration: 180,
+          maxGroupSize: 4,
+          rating: 4.7,
+          reviewCount: 118,
+          isVerified: true
+        }
       }
-    })
-  }
+    }
+  })
 
   console.log('Seed completed successfully.')
 }

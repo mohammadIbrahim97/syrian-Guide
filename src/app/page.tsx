@@ -5,17 +5,11 @@ import SearchableGuides from '@/components/SearchableGuides';
 import NavActions from '@/components/NavActions';
 
 export default async function HomePage() {
-  // Fetch initial tours on the server for fast first paint
-  const initialTours = await prisma.tour.findMany({
-    include: {
-      guide: {
-        include: { user: true }
-      }
-    },
+  // Fetch initial guides on the server for fast first paint
+  const initialGuides = await prisma.guide.findMany({
+    include: { user: true },
     take: 20,
-    orderBy: {
-      guide: { rating: 'desc' }
-    }
+    orderBy: { rating: 'desc' }
   });
 
   return (
@@ -38,7 +32,7 @@ export default async function HomePage() {
 
       {/* Main Content */}
       <main className="ds-main" style={{ margin: '0 auto', width: '100%', maxWidth: '1200px', padding: '0 var(--sz-32)' }}>
-        <SearchableGuides initialTours={JSON.parse(JSON.stringify(initialTours))} />
+        <SearchableGuides initialGuides={JSON.parse(JSON.stringify(initialGuides))} />
       </main>
       
       {/* Footer */}
