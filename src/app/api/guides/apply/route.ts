@@ -1,63 +1,90 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || !session.user || !session.user.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Please log in to become a guide" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
+    // A user may hold only one guide profile
+    const existing = await prisma.guide.findUnique({ where: { userId } });
+    if (existing) {
+      return NextResponse.json({ error: "You already have a guide profile" }, { status: 409 });
     }
 
-    const body = await req.json();
-    const { city, bio, languages } = body;
+    const {
+      guideType,
+      bio,
+      city,
+      languages,
+      maxGroupSize,
+      university,
+      hourlyRate,
+      packagePrice,
+      packageDuration,
+    } = await request.json();
 
-    if (!city || !bio || !languages || !languages.length) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!bio || !city || !Array.isArray(languages) || languages.length === 0) {
+      return NextResponse.json(
+        { error: "Bio, city, and at least one language are required" },
+        { status: 400 }
+      );
     }
 
-    // Hole User aus DB
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (guideType !== "STUDENT" && guideType !== "PROFESSIONAL") {
+      return NextResponse.json({ error: "Please choose a guide type" }, { status: 400 });
     }
 
-    // Prüfe, ob bereits ein Profil existiert
-    const existingGuide = await prisma.guide.findUnique({
-      where: { userId: user.id }
-    });
+    const groupSize = Number.isInteger(maxGroupSize) && maxGroupSize > 0 ? maxGroupSize : 1;
 
-    if (existingGuide) {
-      return NextResponse.json({ error: 'Application already submitted' }, { status: 400 });
+    // Students are hired by the hour; professionals sell a fixed package
+    let data;
+    if (guideType === "STUDENT") {
+      if (typeof hourlyRate !== "number" || hourlyRate <= 0) {
+        return NextResponse.json({ error: "Please set an hourly rate" }, { status: 400 });
+      }
+      data = {
+        userId,
+        guideType,
+        bio,
+        city,
+        languages,
+        university: university || null,
+        hourlyRate,
+        maxGroupSize: groupSize,
+        isVerified: false,
+      };
+    } else {
+      if (typeof packagePrice !== "number" || packagePrice <= 0) {
+        return NextResponse.json({ error: "Please set a package price" }, { status: 400 });
+      }
+      data = {
+        userId,
+        guideType,
+        bio,
+        city,
+        languages,
+        packagePrice,
+        packageDuration: typeof packageDuration === "number" ? packageDuration : null,
+        maxGroupSize: groupSize,
+        isVerified: false,
+      };
     }
 
-    // Erstelle das Guide-Profil und setze die Rolle
+    // Create the profile and promote the user to GUIDE atomically
     const guide = await prisma.$transaction(async (tx) => {
-      const newGuide = await tx.guide.create({
-        data: {
-          userId: user.id,
-          city,
-          bio,
-          languages,
-          isVerified: false // Admin muss dies später auf true setzen
-        }
-      });
-
-      // Update User Role to GUIDE
-      await tx.user.update({
-        where: { id: user.id },
-        data: { role: 'GUIDE' }
-      });
-
-      return newGuide;
+      const created = await tx.guide.create({ data });
+      await tx.user.update({ where: { id: userId }, data: { role: "GUIDE" } });
+      return created;
     });
 
-    return NextResponse.json({ success: true, guide });
+    return NextResponse.json({ id: guide.id }, { status: 201 });
   } catch (error) {
-    console.error('Apply error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Guide application error:", error);
+    return NextResponse.json({ error: "Failed to create guide profile" }, { status: 500 });
   }
 }
