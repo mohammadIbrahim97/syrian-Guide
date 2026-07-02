@@ -43,14 +43,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id! },
-          select: { role: true },
-        });
-        token.role = dbUser?.role || "TOURIST";
+      }
+      // Refresh the role from the DB on sign-in or an explicit session update
+      // (e.g. after a tourist becomes a guide via /apply).
+      if (user || trigger === "update") {
+        const id = (user?.id ?? token.id) as string | undefined;
+        if (id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id },
+            select: { role: true },
+          });
+          token.role = dbUser?.role || "TOURIST";
+        }
       }
       return token;
     },
