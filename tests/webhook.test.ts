@@ -104,7 +104,7 @@ function expiredEvent(sessionId: string) {
 describe('POST /api/webhook (expired checkout releases the slot)', () => {
   beforeEach(() => {
     // Run the transaction callback against the mocked prisma client
-    mockedTransaction.mockImplementation((cb: never) => (cb as (tx: typeof prisma) => unknown)(prisma) as never)
+    mockedTransaction.mockImplementation(((cb: (tx: typeof prisma) => unknown) => cb(prisma)) as never)
   })
 
   it('cancels the PENDING booking and reopens its slot when the session expires', async () => {

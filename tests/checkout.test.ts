@@ -74,7 +74,7 @@ beforeEach(() => {
   // The slot claim succeeds by default (one row updated)
   mockedClaimSlot.mockResolvedValue({ count: 1 } as never)
   // Run the transaction callback against the mocked prisma client
-  mockedTransaction.mockImplementation((cb: never) => (cb as (tx: typeof prisma) => unknown)(prisma) as never)
+  mockedTransaction.mockImplementation(((cb: (tx: typeof prisma) => unknown) => cb(prisma)) as never)
 })
 
 describe('POST /api/checkout (slot-consuming booking)', () => {

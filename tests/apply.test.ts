@@ -56,7 +56,7 @@ beforeEach(() => {
   mockedCreateGuide.mockResolvedValue({ id: 'guide_new' } as never)
   mockedUpdateUser.mockResolvedValue({} as never)
   // Run the transaction callback against the mocked prisma client
-  mockedTransaction.mockImplementation((cb: never) => (cb as (tx: typeof prisma) => unknown)(prisma) as never)
+  mockedTransaction.mockImplementation(((cb: (tx: typeof prisma) => unknown) => cb(prisma)) as never)
 })
 
 describe('POST /api/guides/apply (become a guide)', () => {
