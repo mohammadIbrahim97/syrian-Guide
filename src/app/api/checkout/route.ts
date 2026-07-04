@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 
@@ -14,11 +14,11 @@ function slotLengthHours(startTime: string, endTime: string): number {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getUser();
+    if (!user) {
       return NextResponse.json({ error: "Please log in to book" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const userId = user.id;
 
     const { guideId, slotId, durationHours, participants } = await request.json();
 
@@ -136,8 +136,8 @@ export async function POST(request: NextRequest) {
         participants: participants ? String(participants) : "1",
         totalPrice: String(grandTotal),
       },
-      success_url: `${process.env.NEXTAUTH_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/guides/${guideId}?cancelled=true`,
+      success_url: `${process.env.APP_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.APP_URL}/guides/${guideId}?cancelled=true`,
     });
 
     // Claim the slot and create the booking atomically. The compare-and-set

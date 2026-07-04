@@ -12,15 +12,15 @@ vi.mock('@/lib/stripe', () => ({
   stripe: { checkout: { sessions: { create: vi.fn() } } },
 }))
 vi.mock('@/lib/auth', () => ({
-  auth: vi.fn(),
+  getUser: vi.fn(),
 }))
 
 import { POST } from '@/app/api/checkout/route'
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
-import { auth } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 
-const mockedAuth = vi.mocked(auth)
+const mockedGetUser = vi.mocked(getUser)
 const mockedFindSlot = vi.mocked(prisma.availabilitySlot.findUnique)
 const mockedClaimSlot = vi.mocked(prisma.availabilitySlot.updateMany)
 const mockedCreateBooking = vi.mocked(prisma.booking.create)
@@ -68,7 +68,7 @@ function checkoutRequest(body: Record<string, unknown>) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockedAuth.mockResolvedValue({ user: { id: 'user_1' } } as never)
+  mockedGetUser.mockResolvedValue({ id: 'user_1' } as never)
   mockedStripeCreate.mockResolvedValue({ id: 'cs_test_1', url: 'https://stripe.test/pay' } as never)
   mockedCreateBooking.mockResolvedValue({} as never)
   // The slot claim succeeds by default (one row updated)
@@ -79,7 +79,7 @@ beforeEach(() => {
 
 describe('POST /api/checkout (slot-consuming booking)', () => {
   it('returns 401 when not logged in', async () => {
-    mockedAuth.mockResolvedValue(null as never)
+    mockedGetUser.mockResolvedValue(null as never)
     const res = await POST(checkoutRequest({ guideId: 'g', slotId: 's', durationHours: 2 }) as never)
     expect(res.status).toBe(401)
   })
