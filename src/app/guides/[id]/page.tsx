@@ -6,9 +6,11 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
 import NavActions from '@/components/NavActions';
+import { getUser } from '@/lib/auth';
 
 export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const user = await getUser();
 
   const guide = await prisma.guide.findUnique({
     where: { id },
@@ -111,6 +113,7 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
               maxGroupSize={guide.maxGroupSize}
               rating={guide.rating}
               reviewCount={guide.reviewCount}
+              isLoggedIn={!!user}
             />
 
           </div>

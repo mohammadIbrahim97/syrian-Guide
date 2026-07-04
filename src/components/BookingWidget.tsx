@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 interface Slot {
@@ -19,12 +18,12 @@ interface BookingWidgetProps {
   maxGroupSize: number;
   rating: number;
   reviewCount: number;
+  isLoggedIn: boolean;
 }
 
 const MAX_BOOKING_HOURS = 8;
 
-export default function BookingWidget({ guideId, guideType, hourlyRate, packagePrice, maxGroupSize, rating, reviewCount }: BookingWidgetProps) {
-  const { status } = useSession();
+export default function BookingWidget({ guideId, guideType, hourlyRate, packagePrice, maxGroupSize, rating, reviewCount, isLoggedIn }: BookingWidgetProps) {
   const router = useRouter();
 
   const isStudent = guideType === 'STUDENT';
@@ -93,7 +92,7 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
   };
 
   const handleReserve = async () => {
-    if (status !== 'authenticated') {
+    if (!isLoggedIn) {
       router.push('/login');
       return;
     }
@@ -239,11 +238,11 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
             cursor: loading || (!loadingSlots && slots.length === 0) ? 'not-allowed' : 'pointer',
           }}
         >
-          {loading ? 'Redirecting to payment…' : status !== 'authenticated' ? 'Log in to Reserve' : 'Reserve'}
+          {loading ? 'Redirecting to payment…' : !isLoggedIn ? 'Log in to Reserve' : 'Reserve'}
         </button>
 
         <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--neutral-gray)', margin: 0 }}>
-          {status === 'authenticated' ? "You won't be charged yet" : 'Secure checkout via Stripe'}
+          {isLoggedIn ? "You won't be charged yet" : 'Secure checkout via Stripe'}
         </p>
       </div>
 
