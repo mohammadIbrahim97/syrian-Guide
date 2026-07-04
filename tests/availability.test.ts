@@ -12,14 +12,14 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 vi.mock('@/lib/auth', () => ({
-  auth: vi.fn(),
+  getUser: vi.fn(),
 }))
 
 import { POST, DELETE } from '@/app/api/availability/route'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 
-const mockedAuth = vi.mocked(auth)
+const mockedGetUser = vi.mocked(getUser)
 const mockedFindGuide = vi.mocked(prisma.guide.findUnique)
 const mockedFindSlots = vi.mocked(prisma.availabilitySlot.findMany)
 const mockedCreateMany = vi.mocked(prisma.availabilitySlot.createMany)
@@ -44,7 +44,7 @@ function deleteRequest(slotId: string) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockedAuth.mockResolvedValue({ user: { id: 'user_1' } } as never)
+  mockedGetUser.mockResolvedValue({ id: 'user_1' } as never)
   mockedFindGuide.mockResolvedValue({ id: 'guide_1', userId: 'user_1' } as never)
   mockedFindSlots.mockResolvedValue([] as never)
   mockedCreateMany.mockResolvedValue({ count: 1 } as never)
@@ -52,7 +52,7 @@ beforeEach(() => {
 
 describe('POST /api/availability (slot creation validation)', () => {
   it('returns 401 when not logged in', async () => {
-    mockedAuth.mockResolvedValue(null as never)
+    mockedGetUser.mockResolvedValue(null as never)
     const res = await POST(postRequest([{ date: '2099-08-01', startTime: '09:00', endTime: '13:00' }]) as never)
     expect(res.status).toBe(401)
   })

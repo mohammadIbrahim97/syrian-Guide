@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/; // "HH:MM", 00:00–23:59
@@ -38,13 +38,13 @@ export async function GET(request: NextRequest) {
 
 // POST: Create availability slots (guide only)
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const guide = await prisma.guide.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
   });
 
   if (!guide) {
@@ -127,8 +127,8 @@ export async function POST(request: NextRequest) {
 
 // DELETE: Remove an availability slot (guide only)
 export async function DELETE(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -139,7 +139,7 @@ export async function DELETE(request: NextRequest) {
     include: { guide: true },
   });
 
-  if (!slot || slot.guide.userId !== session.user.id) {
+  if (!slot || slot.guide.userId !== user.id) {
     return NextResponse.json({ error: "Not found or not yours" }, { status: 404 });
   }
 
