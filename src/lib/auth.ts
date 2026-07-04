@@ -7,6 +7,11 @@ import bcrypt from "bcryptjs";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma) as ReturnType<typeof PrismaAdapter>,
   session: { strategy: "jwt" },
+  // The app runs behind a platform proxy with NEXTAUTH_URL configured.
+  // Without this, production logins fail with UntrustedHost on any
+  // non-Vercel host (dev mode auto-trusts localhost, so it only bites
+  // in production).
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
