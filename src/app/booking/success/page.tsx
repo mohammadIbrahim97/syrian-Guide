@@ -2,33 +2,15 @@ export const dynamic = 'force-dynamic';
 
 import React from 'react';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
+import { getVerifiedBooking } from '@/lib/booking-confirmation';
 
 export default async function BookingSuccessPage({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
   const { session_id } = await searchParams;
 
-  let booking = null;
-
-  if (session_id) {
-    // Try to confirm the booking
-    try {
-      booking = await prisma.booking.update({
-        where: { stripeSessionId: session_id },
-        data: { status: 'CONFIRMED' },
-        include: {
-          guide: { include: { user: true } },
-        },
-      });
-    } catch {
-      // Booking may already be confirmed via webhook
-      booking = await prisma.booking.findUnique({
-        where: { stripeSessionId: session_id },
-        include: {
-          guide: { include: { user: true } },
-        },
-      });
-    }
-  }
+  // Confirms only after verifying with Stripe that the session was paid —
+  // the session_id in the URL alone proves nothing.
+  const booking = session_id ? await getVerifiedBooking(session_id) : null;
+  const confirmed = booking?.status === 'CONFIRMED';
 
   return (
     <div className="layout-wrapper" style={{ flexDirection: 'column', minHeight: '100vh' }}>
@@ -47,14 +29,25 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
           borderRadius: '16px', padding: '64px 48px', boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
           border: '1px solid rgba(0,0,0,0.06)',
         }}>
-          <div style={{ fontSize: '64px', marginBottom: '24px' }}>🎉</div>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '12px' }}>Booking Confirmed!</h1>
+          <div style={{ fontSize: '64px', marginBottom: '24px' }}>{confirmed ? '🎉' : '⏳'}</div>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '12px' }}>
+            {confirmed ? 'Booking Confirmed!' : 'Payment Processing…'}
+          </h1>
 
           {booking ? (
             <>
               <p style={{ fontSize: '16px', color: 'var(--neutral-gray)', marginBottom: '32px', lineHeight: 1.6 }}>
-                Your tour with <strong>{booking.guide.user.name}</strong> has been booked for{' '}
-                <strong>{new Date(booking.date).toLocaleDateString('en-US', { dateStyle: 'long' })}</strong>.
+                {confirmed ? (
+                  <>
+                    Your tour with <strong>{booking.guide.user.name}</strong> has been booked for{' '}
+                    <strong>{new Date(booking.date).toLocaleDateString('en-US', { dateStyle: 'long' })}</strong>.
+                  </>
+                ) : (
+                  <>
+                    Your reservation with <strong>{booking.guide.user.name}</strong> is held while we wait for
+                    payment confirmation. Refresh this page in a moment, or check your bookings later.
+                  </>
+                )}
               </p>
 
               <div style={{
@@ -75,12 +68,14 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
                   )}
                 </div>
                 <div>
-                  <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Total Paid</div>
+                  <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>{confirmed ? 'Total Paid' : 'Total'}</div>
                   <div style={{ fontSize: '16px', fontWeight: 600 }}>€{booking.totalPrice.toFixed(2)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Status</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-success)' }}>✓ Confirmed</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: confirmed ? 'var(--color-success)' : 'var(--brand-sand)' }}>
+                    {confirmed ? '✓ Confirmed' : 'Pending payment'}
+                  </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '13px', color: 'var(--neutral-gray)' }}>Booking ID</div>
@@ -90,7 +85,8 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
             </>
           ) : (
             <p style={{ fontSize: '16px', color: 'var(--neutral-gray)', marginBottom: '32px' }}>
-              Your payment was processed successfully. You&apos;ll receive a confirmation shortly.
+              We couldn&apos;t find a booking for this link. If you just completed a payment, it may take a
+              moment to appear.
             </p>
           )}
 
