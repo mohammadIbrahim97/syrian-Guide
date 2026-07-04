@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -11,64 +11,20 @@ datasource db {
 }
 
 // ==========================================
-// NextAuth Models
-// ==========================================
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// ==========================================
 // User & Auth Models
 // ==========================================
 
 model User {
-  id               String    @id @default(cuid())
+  id               String   @id
   name             String?
-  email            String    @unique
-  emailVerified    DateTime?
+  email            String   @unique
   image            String?
-  hashedPassword   String?
-  role             Role      @default(TOURIST)
+  role             Role     @default(TOURIST)
   stripeCustomerId String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relations
-  accounts     Account[]
-  sessions     Session[]
   guideProfile Guide?
   bookings     Booking[]
 }
@@ -84,20 +40,20 @@ enum Role {
 // ==========================================
 
 model Guide {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  bio         String    @db.Text
-  city        String
-  languages   String[]  // e.g., ["English", "Arabic", "German"]
-  guideType   GuideType @default(STUDENT)
-  university  String?   // students: which university they attend
-  hourlyRate  Float?    // students: price per hour
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  bio             String    @db.Text
+  city            String
+  languages       String[] // e.g., ["English", "Arabic", "German"]
+  guideType       GuideType @default(STUDENT)
+  university      String? // students: which university they attend
+  hourlyRate      Float? // students: price per hour
   packagePrice    Float? // professionals: fixed package price per person
-  packageDuration Int?   // professionals: package length in minutes
-  maxGroupSize    Int    @default(1)
-  rating      Float     @default(0.0)
-  reviewCount Int       @default(0)
-  isVerified  Boolean   @default(false)
+  packageDuration Int? // professionals: package length in minutes
+  maxGroupSize    Int       @default(1)
+  rating          Float     @default(0.0)
+  reviewCount     Int       @default(0)
+  isVerified      Boolean   @default(false)
 
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings          Booking[]
@@ -117,8 +73,8 @@ model AvailabilitySlot {
   id        String   @id @default(cuid())
   guideId   String
   date      DateTime @db.Date
-  startTime String   // e.g. "09:00"
-  endTime   String   // e.g. "13:00"
+  startTime String // e.g. "09:00"
+  endTime   String // e.g. "13:00"
   isBooked  Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -138,7 +94,7 @@ model Booking {
   slotId          String?       @unique // the availability slot this booking consumes
   userId          String
   date            DateTime
-  durationHours   Int?          // student (hourly) bookings
+  durationHours   Int? // student (hourly) bookings
   participants    Int           @default(1)
   status          BookingStatus @default(PENDING)
   totalPrice      Float
