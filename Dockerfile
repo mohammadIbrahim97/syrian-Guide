@@ -1,3 +1,5 @@
+# LOCAL DEVELOPMENT ONLY — runs the Next.js dev server, not a production
+# build. See README.md "Deployment" for the production path.
 # Use a base image that contains both Python 3.11 and Node.js 20
 FROM nikolaik/python-nodejs:python3.11-nodejs20-slim
 

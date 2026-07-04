@@ -1,3 +1,5 @@
+# LOCAL DEVELOPMENT ONLY — dev server, throwaway credentials, no Stripe
+# config. See README.md "Deployment" for the production path.
 version: '3.8'
 
 services:

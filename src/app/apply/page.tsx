@@ -69,9 +69,10 @@ export default function ApplyPage() {
         return;
       }
 
-      // Refresh the session so it picks up the new GUIDE role, then show the live profile
+      // Refresh the session so it picks up the new GUIDE role, then send the
+      // guide to the dashboard — adding availability is the required next step
       await update();
-      router.push(`/guides/${data.id}`);
+      router.push('/account');
       router.refresh();
     } catch {
       setError('Something went wrong');

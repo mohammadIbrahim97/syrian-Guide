@@ -1,67 +1,72 @@
-# 🇸🇾 SyriaGuide — Premium Brand & Design System
+# 🇸🇾 SyriaGuide
 
-> Built with a high-fidelity visual aesthetic inspired by **WithLocals**, structured around clean **Vercel Web Interface Guidelines**.
+A tourism marketplace that matches travelers with local Syrian guides. Guides — university students (hired by the hour) or professionals (fixed tour packages) — publish an offer and open availability slots; tourists find a guide, book a slot, and pay online.
 
-This repository contains the design system tokens, CSS styles, and component documentation for **SyriaGuide**, a tourism marketplace matching travelers with local Syrian university student guides.
+**Stack:** Next.js 16 (App Router) · Prisma 7 + PostgreSQL · NextAuth v5 (credentials) · Stripe Checkout · Vitest
 
----
+## Getting started
 
-## 🎨 1. Evolved Visual Vibe (WithLocals & Syrian Heritage)
+Prerequisites: Node.js 22+, a PostgreSQL database, Stripe test-mode keys.
 
-We analyzed `withlocals.com` to capture its warm, humanist, and personal nature. The SyriaGuide design system incorporates those traits and refines them using Syrian cultural references:
+```bash
+# 1. Configure the environment FIRST — `npm install` runs `prisma generate`,
+#    which fails if DATABASE_URL is not set.
+cp .env.example .env   # then fill in real values
 
-1. **Vibrant Accents**: WithLocals uses `#fb722c` (Coral Orange). SyriaGuide adopts **Syrian Amber (`#FF5E3A`)**, a bright pomegranate orange that acts as the primary action token.
-2. **Structural Stability**: We introduced **Damascus Blue (`#1A365D`)**, a deep indigo cobalt shade inspired by Damascus mosaic tiles, which anchors headings and trust blocks.
-3. **Approachability**: Buttons are pill-shaped (`9999px` radius) with micro-scale animations (`translateY(-2px)`) on hover and smooth shadows.
-4. **Organic Containers**: Profile cards feature a generous `20px` border-radius (`--radius-lg`) with soft, low-intensity elevation drop shadows.
+# 2. Install dependencies
+npm install
 
----
+# 3. Apply the database schema and seed demo guides
+npm run migrate:deploy
+npx prisma db seed
 
-## 💎 2. Design Tokens (CSS Custom Properties)
-
-Defined on `:root` inside `styles.css`:
-
-```css
-/* Color Tokens */
---brand-coral: #FF5E3A;          /* Syrian Amber (Primary CTA) */
---brand-indigo: #1A365D;         /* Damascus Blue (Headings / Nav) */
---brand-sand: #DFB26C;           /* Desert Gold (Accent / Review Stars) */
---neutral-dark: #1E1E24;         /* Charcoal Black (Text primary) */
---neutral-light: #FBF9F6;        /* Limestone Cream (Warm BG) */
-
-/* Border Radius Tokens */
---radius-lg: 20px;               /* Card containers */
---radius-md: 14px;               /* Form controls */
---radius-pill: 9999px;           /* Buttons & status pills */
-
-/* Elevation Shadows */
---shadow-sm: 0 2px 8px rgba(30, 30, 36, 0.04);
---shadow-md: 0 8px 24px rgba(30, 30, 36, 0.06);
---shadow-lg: 0 16px 40px rgba(30, 30, 36, 0.1);
+# 4. Run the dev server
+npm run dev            # http://localhost:3000
 ```
 
----
+To receive Stripe webhooks locally (bookings are only confirmed via verified payment events):
 
-## 🚀 3. Web Interface Guidelines Compliance (Vercel Audited)
+```bash
+stripe listen --forward-to localhost:3000/api/webhook
+# copy the printed whsec_... into STRIPE_WEBHOOK_SECRET in .env
+```
 
-Following the newly installed **`web-design-guidelines`** skill, the design system implements critical compliance rules:
+### Tests & lint
 
-### Accessibility
-- **Semantic HTML first**: The components avoid generic `div` onClick wrappers. Primary buttons use `<button>`, and destination routes use anchor links `<a>`.
-- **Contrast Ratios**: Body text on Limestone background maintains a contract ratio greater than **7:1**, exceeding WCAG AAA standards.
-- **RTL Script Support**: Integrates `Noto Sans Arabic` with line-height ratios that adapt gracefully when reading direction flips to Right-to-Left (RTL).
+```bash
+npm test
+npm run lint
+```
 
-### Focus States
-- Interactive buttons and inputs replace default browser focus rings with custom `--focus-ring` (a soft amber outline overlay).
+## Environment variables
 
-### Loading States
-- Long-running transaction buttons (like *Processing...* and *Saving...*) feature inline CSS loading spinners and end with horizontal ellipses (`…`) in accordance with the guidelines.
+All five are required in production. See [.env.example](.env.example) for details and examples.
 
----
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string. Must be set before `npm install` (postinstall runs `prisma generate`). |
+| `AUTH_SECRET` | NextAuth v5 session/JWT secret (`openssl rand -base64 32`). Legacy `NEXTAUTH_SECRET` also works. |
+| `NEXTAUTH_URL` | Public base URL of the app; used for Stripe Checkout redirect URLs. |
+| `STRIPE_SECRET_KEY` | Stripe API secret key. |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret of the webhook endpoint. **Required** — the webhook rejects unsigned events, and without it bookings are never confirmed and abandoned checkouts never release their slots. |
 
-## 🖥️ 4. How to Preview
+## Deployment (minimal path)
 
-To inspect the interactive playground, color swatches, buttons, form states, and guide profile cards, open `index.html` in your browser:
+The intended production setup is a managed platform (e.g. **Vercel**) plus a **managed Postgres** (Neon, Supabase, Railway, …):
 
-- Local Preview Path: **[index.html](file:///home/mohammadibrahim/syria-guide-design-system/index.html)**
-- CSS Stylesheet: **[styles.css](file:///home/mohammadibrahim/syria-guide-design-system/styles.css)**
+1. Create the Postgres database and set all five environment variables in the platform (with `NEXTAUTH_URL` set to the production domain).
+2. Apply migrations against the production database — this does not happen automatically:
+   ```bash
+   DATABASE_URL="<production-url>" npm run migrate:deploy
+   ```
+   Run it on first deploy and after every schema change (locally or as a CI/CD step). Seeding is optional (`npx prisma db seed` adds demo guides).
+3. Deploy. The build is `prisma generate && next build`; no extra configuration is needed.
+4. In the Stripe dashboard, add a webhook endpoint pointing at `https://<your-domain>/api/webhook` subscribed to `checkout.session.completed` and `checkout.session.expired`, then put its signing secret into `STRIPE_WEBHOOK_SECRET` and redeploy.
+
+> **Note:** `Dockerfile` and `docker-compose.yml` are **local development only** (dev server, hardcoded dev credentials, no Stripe config). They are not a production deployment path.
+
+## Project notes
+
+- Payouts to guides are manual for now: Stripe collects into the platform account and the operator settles with guides directly.
+- Roadmap and scope decisions live in the GitHub issues — see the "Minimal launch" epic.
+- Design tokens and visual guidelines: [docs/design-system.md](docs/design-system.md) (interactive preview in `index.html` / `styles.css`).

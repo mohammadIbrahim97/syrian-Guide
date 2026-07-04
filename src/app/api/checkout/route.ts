@@ -97,10 +97,13 @@ export async function POST(request: NextRequest) {
     const serviceFee = Math.round(totalPrice * 0.1 * 100) / 100;
     const grandTotal = totalPrice + serviceFee;
 
-    // Create Stripe Checkout Session
+    // Create Stripe Checkout Session. The slot is claimed below before the
+    // user pays, so the session must expire quickly — the webhook releases
+    // the slot on checkout.session.expired (Stripe's minimum is 30 minutes).
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
+      expires_at: Math.floor(Date.now() / 1000) + 35 * 60,
       line_items: [
         {
           price_data: {

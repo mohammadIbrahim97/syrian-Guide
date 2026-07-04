@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
+import NavActions from '@/components/NavActions';
 
 export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,11 +31,8 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
 
             <div style={{ flex: 1, padding: '0 40px' }}></div>
 
-            <div className="mock-nav-actions">
-              <Link href="/" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500 }}>All Guides</Link>
-              <button className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}>EUR</button>
-              <Link href="/login" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500 }}>Log in</Link>
-            </div>
+            <Link href="/" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500, marginRight: 'var(--sz-16)' }}>All Guides</Link>
+            <NavActions />
           </div>
         </div>
       </header>
