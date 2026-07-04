@@ -55,15 +55,24 @@ All five are required in production. See [.env.example](.env.example) for detail
 The intended production setup is a managed platform (e.g. **Vercel**) plus a **managed Postgres** (Neon, Supabase, Railway, …):
 
 1. Create the Postgres database and set all five environment variables in the platform (with `NEXTAUTH_URL` set to the production domain).
-2. Apply migrations against the production database — this does not happen automatically:
-   ```bash
-   DATABASE_URL="<production-url>" npm run migrate:deploy
-   ```
-   Run it on first deploy and after every schema change (locally or as a CI/CD step). Seeding is optional (`npx prisma db seed` adds demo guides).
+2. Apply migrations against the production database (see [Database & migrations](#database--migrations-prisma) below — this does **not** happen during the app build).
 3. Deploy. The build is `prisma generate && next build`; no extra configuration is needed.
 4. In the Stripe dashboard, add a webhook endpoint pointing at `https://<your-domain>/api/webhook` subscribed to `checkout.session.completed` and `checkout.session.expired`, then put its signing secret into `STRIPE_WEBHOOK_SECRET` and redeploy.
 
 > **Note:** `Dockerfile` and `docker-compose.yml` are **local development only** (dev server, hardcoded dev credentials, no Stripe config). They are not a production deployment path.
+
+### Database & migrations (Prisma)
+
+**Connection string — must be a direct TCP `postgres://` URL.** The app connects through a `pg` connection pool (`src/lib/prisma.ts`), so `DATABASE_URL` has to be a standard PostgreSQL connection string. If you use **Prisma Postgres**, copy its **direct connection** string — *not* the `prisma+postgres://` (Accelerate) URL, which this driver-adapter setup cannot use. Neon, Supabase, Railway, etc. work as-is.
+
+**Applying migrations.** The app build only runs `prisma generate`; it never touches the schema. Apply migrations one of two ways:
+
+- **Automated (recommended):** the [`Deploy migrations`](.github/workflows/deploy-migrations.yml) GitHub Action runs `prisma migrate deploy` on every push to `main`. Enable it by adding a `DATABASE_URL` repository secret (Settings → Secrets and variables → Actions) with the production connection string. Without the secret the job no-ops, so it never blocks a merge. You can also trigger it by hand from the Actions tab.
+- **Manual:** `DATABASE_URL="<production-url>" npm run migrate:deploy`.
+
+Run migrations on first deploy and after every schema change. Seeding demo guides is optional: `DATABASE_URL="<production-url>" npx prisma db seed`.
+
+> The GitHub Action runner must be able to reach the database over the network (Prisma Postgres, Neon, Supabase, etc. are internet-reachable). For a database that is only reachable from inside your hosting platform, run `npm run migrate:deploy` from there instead.
 
 ## Project notes
 

@@ -1,0 +1,45 @@
+name: Deploy migrations
+
+# Applies pending Prisma migrations to the production database. A fresh or
+# out-of-date production DB never gets its schema otherwise — the app build
+# only runs `prisma generate`, never `migrate deploy`.
+#
+# Opt-in: set a DATABASE_URL repository secret (a DIRECT postgres:// TCP
+# connection string — NOT a prisma+postgres:// Accelerate URL) to enable it.
+# Without the secret the job no-ops so it never blocks a merge.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # allow running it by hand from the Actions tab
+
+# Never run two migration deploys against the same DB at once.
+concurrency:
+  group: deploy-migrations
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply migrations
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::DATABASE_URL secret is not set — skipping migrations. Add it in Settings → Secrets and variables → Actions to enable production migrations."
+            exit 0
+          fi
+          npx prisma migrate deploy
