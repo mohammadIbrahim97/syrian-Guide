@@ -1,4 +1,11 @@
+import { createClient } from '@supabase/supabase-js'
 import { prisma } from '../src/lib/prisma'
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SECRET_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+)
 
 // A date N days from now, normalized to midnight UTC (AvailabilitySlot.date is a DATE column)
 function daysFromNow(days: number): Date {
@@ -8,59 +15,88 @@ function daysFromNow(days: number): Date {
   return d
 }
 
+// Create the auth user (idempotent) and return its id. The DB trigger creates
+// the matching public.User row; we return the id to attach a guide profile.
+async function ensureAuthUser(email: string, password: string, name: string): Promise<string> {
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { name },
+  })
+
+  if (data?.user) return data.user.id
+
+  // Already exists — find the id by paging the user list.
+  if (error) {
+    for (let page = 1; page <= 10; page++) {
+      const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 })
+      const found = list.users.find((u) => u.email === email)
+      if (found) return found.id
+      if (list.users.length < 200) break
+    }
+  }
+  throw new Error(`Could not create or find auth user for ${email}: ${error?.message}`)
+}
+
 async function main() {
+  const ahmadId = await ensureAuthUser('ahmad.guide@example.com', 'password123', 'Ahmad Al-Dimashqi')
+  const laylaId = await ensureAuthUser('layla.guide@example.com', 'password123', 'Layla Haddad')
+
   // Student guide: hired by the hour
-  await prisma.user.upsert({
-    where: { email: 'ahmad.guide@example.com' },
-    update: {},
-    create: {
+  await prisma.user.update({
+    where: { id: ahmadId },
+    data: {
       name: 'Ahmad Al-Dimashqi',
-      email: 'ahmad.guide@example.com',
       role: 'GUIDE',
       guideProfile: {
-        create: {
-          bio: 'History student and expert in Umayyad history. I love showing visitors the ancient alleys and the Umayyad Mosque.',
-          city: 'Damascus',
-          languages: ['Arabic', 'English'],
-          guideType: 'STUDENT',
-          university: 'Damascus University',
-          hourlyRate: 10.0,
-          rating: 4.9,
-          reviewCount: 42,
-          isVerified: true
-        }
-      }
-    }
+        upsert: {
+          create: {
+            bio: 'History student and expert in Umayyad history. I love showing visitors the ancient alleys and the Umayyad Mosque.',
+            city: 'Damascus',
+            languages: ['Arabic', 'English'],
+            guideType: 'STUDENT',
+            university: 'Damascus University',
+            hourlyRate: 10.0,
+            rating: 4.9,
+            reviewCount: 42,
+            isVerified: true,
+          },
+          update: {},
+        },
+      },
+    },
   })
 
   // Professional guide: sells a fixed tour package
-  await prisma.user.upsert({
-    where: { email: 'layla.guide@example.com' },
-    update: {},
-    create: {
+  await prisma.user.update({
+    where: { id: laylaId },
+    data: {
       name: 'Layla Haddad',
-      email: 'layla.guide@example.com',
       role: 'GUIDE',
       guideProfile: {
-        create: {
-          bio: 'Licensed tour guide working with Aleppo Heritage Tours. My signature package covers the Citadel, the old souks, and traditional food stops.',
-          city: 'Aleppo',
-          languages: ['Arabic', 'English', 'French'],
-          guideType: 'PROFESSIONAL',
-          packagePrice: 25.0,
-          packageDuration: 180,
-          maxGroupSize: 4,
-          rating: 4.7,
-          reviewCount: 118,
-          isVerified: true
-        }
-      }
-    }
+        upsert: {
+          create: {
+            bio: 'Licensed tour guide working with Aleppo Heritage Tours. My signature package covers the Citadel, the old souks, and traditional food stops.',
+            city: 'Aleppo',
+            languages: ['Arabic', 'English', 'French'],
+            guideType: 'PROFESSIONAL',
+            packagePrice: 25.0,
+            packageDuration: 180,
+            maxGroupSize: 4,
+            rating: 4.7,
+            reviewCount: 118,
+            isVerified: true,
+          },
+          update: {},
+        },
+      },
+    },
   })
 
   // Open upcoming availability for both guides so they are bookable
   const guides = await prisma.guide.findMany({
-    where: { user: { email: { in: ['ahmad.guide@example.com', 'layla.guide@example.com'] } } },
+    where: { userId: { in: [ahmadId, laylaId] } },
   })
   for (const guide of guides) {
     await prisma.availabilitySlot.createMany({
