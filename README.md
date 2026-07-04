@@ -2,25 +2,29 @@
 
 A tourism marketplace that matches travelers with local Syrian guides. Guides — university students (hired by the hour) or professionals (fixed tour packages) — publish an offer and open availability slots; tourists find a guide, book a slot, and pay online.
 
-**Stack:** Next.js 16 (App Router) · Prisma 7 + PostgreSQL · NextAuth v5 (credentials) · Stripe Checkout · Vitest
+**Stack:** Next.js 16 (App Router) · Prisma 7 + PostgreSQL · Supabase Auth · Stripe Checkout · Vitest
 
 ## Getting started
 
-Prerequisites: Node.js 22+, a PostgreSQL database, Stripe test-mode keys.
+Prerequisites: Node.js 22+, a Supabase project, Stripe test-mode keys.
 
 ```bash
-# 1. Configure the environment FIRST — `npm install` runs `prisma generate`,
+# 1. Create a Supabase project, then in Authentication → Providers disable
+#    "Confirm email" (demo accounts sign in immediately, no email step yet).
+#    Grab the session-pooler DATABASE_URL and API keys from Settings.
+
+# 2. Configure the environment — `npm install` runs `prisma generate`,
 #    which fails if DATABASE_URL is not set.
 cp .env.example .env   # then fill in real values
 
-# 2. Install dependencies
+# 3. Install dependencies
 npm install
 
-# 3. Apply the database schema and seed demo guides
+# 4. Apply the database schema and seed demo guides
 npm run migrate:deploy
 npx prisma db seed
 
-# 4. Run the dev server
+# 5. Run the dev server
 npm run dev            # http://localhost:3000
 ```
 
@@ -40,21 +44,23 @@ npm run lint
 
 ## Environment variables
 
-All five are required in production. See [.env.example](.env.example) for details and examples.
+All are required in production. See [.env.example](.env.example) for details and examples.
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Postgres connection string. Must be set before `npm install` (postinstall runs `prisma generate`). |
-| `AUTH_SECRET` | NextAuth v5 session/JWT secret (`openssl rand -base64 32`). Legacy `NEXTAUTH_SECRET` also works. |
-| `NEXTAUTH_URL` | Public base URL of the app; used for Stripe Checkout redirect URLs. |
+| `DATABASE_URL` | Postgres connection string. Must be set before `npm install` (postinstall runs `prisma generate`). Use the Supabase session pooler for the app/production; use the local Docker Postgres (`docker compose up -d db`) when authoring migrations with `prisma migrate dev`. |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (Settings → API). |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable (anon) key (Settings → API). |
+| `SUPABASE_SECRET_KEY` | Supabase secret key, server-only. Used by the seed script to create demo auth users, and later by Storage upload routes. Never expose to the client. |
+| `APP_URL` | Public base URL of the app; used for Stripe Checkout redirect URLs. |
 | `STRIPE_SECRET_KEY` | Stripe API secret key. |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret of the webhook endpoint. **Required** — the webhook rejects unsigned events, and without it bookings are never confirmed and abandoned checkouts never release their slots. |
 
 ## Deployment (minimal path)
 
-The intended production setup is a managed platform (e.g. **Vercel**) plus a **managed Postgres** (Neon, Supabase, Railway, …):
+The intended production setup is a managed platform (e.g. **Vercel**) plus the **Supabase** project created above (Postgres + Auth):
 
-1. Create the Postgres database and set all five environment variables in the platform (with `NEXTAUTH_URL` set to the production domain).
+1. Set all environment variables in the platform, with `DATABASE_URL` pointed at the Supabase session pooler and `APP_URL` set to the production domain.
 2. Apply migrations against the production database — this does not happen automatically:
    ```bash
    DATABASE_URL="<production-url>" npm run migrate:deploy
