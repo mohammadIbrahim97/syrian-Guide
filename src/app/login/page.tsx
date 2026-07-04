@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -18,34 +18,30 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
+    const supabase = createClient();
+
     try {
       if (isRegister) {
-        // Register first
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+        const { error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: { data: { name: form.name } },
         });
-
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || 'Registration failed');
+        if (error) {
+          setError(error.message);
           setLoading(false);
           return;
         }
-      }
-
-      // Sign in
-      const result = await signIn('credentials', {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError(isRegister ? 'Account created but login failed. Try logging in.' : 'Invalid email or password');
-        setLoading(false);
-        return;
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+        if (error) {
+          setError('Invalid email or password');
+          setLoading(false);
+          return;
+        }
       }
 
       router.push('/');
