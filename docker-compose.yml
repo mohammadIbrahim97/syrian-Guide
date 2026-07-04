@@ -16,7 +16,6 @@ services:
       - /app/node_modules
     environment:
       - DATABASE_URL=postgresql://postgres:syriaguide2026@db:5432/syriaguide?schema=public
-      - NEXTAUTH_SECRET=dein_super_geheimnis_32_zeichen
       - NODE_ENV=development
     depends_on:
       db:
