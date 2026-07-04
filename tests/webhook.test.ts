@@ -88,3 +88,61 @@ describe('POST /api/webhook (signature-verified payment events)', () => {
     expect(mockedUpdateMany).not.toHaveBeenCalled()
   })
 })
+
+const mockedTransaction = vi.mocked(prisma.$transaction)
+const mockedFindBooking = vi.mocked(prisma.booking.findUnique)
+const mockedUpdateBooking = vi.mocked(prisma.booking.update)
+const mockedUpdateSlot = vi.mocked(prisma.availabilitySlot.update)
+
+function expiredEvent(sessionId: string) {
+  return {
+    type: 'checkout.session.expired',
+    data: { object: { id: sessionId } },
+  }
+}
+
+describe('POST /api/webhook (expired checkout releases the slot)', () => {
+  beforeEach(() => {
+    // Run the transaction callback against the mocked prisma client
+    mockedTransaction.mockImplementation((cb: never) => (cb as (tx: typeof prisma) => unknown)(prisma) as never)
+  })
+
+  it('cancels the PENDING booking and reopens its slot when the session expires', async () => {
+    mockedConstructEvent.mockReturnValue(expiredEvent('cs_gone') as never)
+    mockedFindBooking.mockResolvedValue({ id: 'b_1', status: 'PENDING', slotId: 'slot_1' } as never)
+
+    const res = await POST(webhookRequest(expiredEvent('cs_gone'), 'good-sig') as never)
+    expect(res.status).toBe(200)
+
+    expect(mockedUpdateBooking).toHaveBeenCalledWith({
+      where: { id: 'b_1' },
+      data: { status: 'CANCELLED' },
+    })
+    expect(mockedUpdateSlot).toHaveBeenCalledWith({
+      where: { id: 'slot_1' },
+      data: { isBooked: false },
+    })
+  })
+
+  it('leaves a CONFIRMED booking (and its slot) untouched when a stale expiry arrives', async () => {
+    mockedConstructEvent.mockReturnValue(expiredEvent('cs_paid_then_expired') as never)
+    mockedFindBooking.mockResolvedValue({ id: 'b_2', status: 'CONFIRMED', slotId: 'slot_2' } as never)
+
+    const res = await POST(webhookRequest(expiredEvent('cs_paid_then_expired'), 'good-sig') as never)
+    expect(res.status).toBe(200)
+
+    expect(mockedUpdateBooking).not.toHaveBeenCalled()
+    expect(mockedUpdateSlot).not.toHaveBeenCalled()
+  })
+
+  it('ignores an expiry for a session with no booking', async () => {
+    mockedConstructEvent.mockReturnValue(expiredEvent('cs_unknown') as never)
+    mockedFindBooking.mockResolvedValue(null as never)
+
+    const res = await POST(webhookRequest(expiredEvent('cs_unknown'), 'good-sig') as never)
+    expect(res.status).toBe(200)
+
+    expect(mockedUpdateBooking).not.toHaveBeenCalled()
+    expect(mockedUpdateSlot).not.toHaveBeenCalled()
+  })
+})

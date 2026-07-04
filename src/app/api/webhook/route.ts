@@ -41,5 +41,29 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    // The checkout claimed the slot before payment; an abandoned session
+    // must give it back. Cancel the booking and reopen the slot together.
+    await prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
+        where: { stripeSessionId: session.id },
+      });
+      if (!booking || booking.status !== "PENDING") return;
+
+      await tx.booking.update({
+        where: { id: booking.id },
+        data: { status: "CANCELLED" },
+      });
+      if (booking.slotId) {
+        await tx.availabilitySlot.update({
+          where: { id: booking.slotId },
+          data: { isBooked: false },
+        });
+      }
+    });
+  }
+
   return NextResponse.json({ received: true });
 }

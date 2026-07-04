@@ -129,9 +129,16 @@ describe('POST /api/checkout (slot-consuming booking)', () => {
     // Stripe: 3h × €10 = €30 (3000 cents) + €3 fee (300 cents)
     const stripeArgs = mockedStripeCreate.mock.calls[0][0] as never as {
       line_items: { price_data: { unit_amount: number } }[]
+      expires_at: number
     }
     expect(stripeArgs.line_items[0].price_data.unit_amount).toBe(3000)
     expect(stripeArgs.line_items[1].price_data.unit_amount).toBe(300)
+
+    // The session must expire (Stripe minimum 30 min) so an abandoned
+    // checkout gives the claimed slot back via checkout.session.expired
+    const nowSeconds = Math.floor(Date.now() / 1000)
+    expect(stripeArgs.expires_at).toBeGreaterThanOrEqual(nowSeconds + 30 * 60 - 5)
+    expect(stripeArgs.expires_at).toBeLessThanOrEqual(nowSeconds + 24 * 60 * 60)
 
     // Slot claimed atomically: compare-and-set on isBooked
     expect(mockedClaimSlot).toHaveBeenCalledWith({
