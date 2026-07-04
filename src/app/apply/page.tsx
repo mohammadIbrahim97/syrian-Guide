@@ -2,14 +2,19 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
 const ALL_LANGUAGES = ['English', 'Arabic', 'French', 'German', 'Spanish'];
 
 export default function ApplyPage() {
-  const { status, update } = useSession();
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const router = useRouter();
+
+  React.useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
+  }, []);
 
   const [guideType, setGuideType] = useState<'STUDENT' | 'PROFESSIONAL'>('STUDENT');
   const [form, setForm] = useState({
@@ -69,9 +74,8 @@ export default function ApplyPage() {
         return;
       }
 
-      // Refresh the session so it picks up the new GUIDE role, then send the
-      // guide to the dashboard — adding availability is the required next step
-      await update();
+      // Send the guide to the dashboard — its server render reads the fresh
+      // GUIDE role via getUser(). Adding availability is the required next step.
       router.push('/account');
       router.refresh();
     } catch {
@@ -110,7 +114,7 @@ export default function ApplyPage() {
             Share your city with travelers and earn as a local guide.
           </p>
 
-          {status === 'unauthenticated' ? (
+          {authed === false ? (
             <div style={{ textAlign: 'center' }}>
               <p style={{ fontSize: '15px', color: 'var(--neutral-gray)', marginBottom: '24px' }}>
                 Please log in to create your guide offer.
@@ -222,7 +226,7 @@ export default function ApplyPage() {
 
               <button
                 type="submit"
-                disabled={loading || status === 'loading'}
+                disabled={loading || authed === null}
                 className="btn btn-primary"
                 style={{
                   width: '100%', padding: '14px', fontSize: '16px', borderRadius: '8px',
