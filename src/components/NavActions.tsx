@@ -1,35 +1,25 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { getUser } from '@/lib/auth';
+import LogoutButton from './LogoutButton';
 
-export default function NavActions() {
-  const { data: session, status } = useSession();
-  const role = (session?.user as { role?: string } | undefined)?.role;
+export default async function NavActions() {
+  const user = await getUser();
 
   return (
     <div className="mock-nav-actions">
-      {status === 'loading' ? (
-        <span style={{ fontSize: '14px', color: 'var(--neutral-gray)' }}>…</span>
-      ) : session?.user ? (
+      {user ? (
         <>
           <Link href="/bookings" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500 }}>My bookings</Link>
-          {role === 'GUIDE' ? (
+          {user.role === 'GUIDE' ? (
             <Link href="/account" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500 }}>Guide dashboard</Link>
           ) : (
             <Link href="/apply" className="btn btn-pill btn-sm btn-primary">Become a host</Link>
           )}
           <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--neutral-dark)' }}>
-            {session.user.name || session.user.email?.split('@')[0]}
+            {user.name || user.email?.split('@')[0]}
           </span>
-          <button
-            onClick={() => signOut()}
-            className="mock-nav-link"
-            style={{ fontSize: '15px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--neutral-gray)' }}
-          >
-            Log out
-          </button>
+          <LogoutButton />
         </>
       ) : (
         <>
