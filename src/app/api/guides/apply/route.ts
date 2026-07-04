@@ -1,16 +1,16 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getUser();
+    if (!user) {
       return NextResponse.json({ error: "Please log in to become a guide" }, { status: 401 });
     }
-    const userId = session.user.id;
+    const userId = user.id;
 
     // A user may hold only one guide profile
     const existing = await prisma.guide.findUnique({ where: { userId } });

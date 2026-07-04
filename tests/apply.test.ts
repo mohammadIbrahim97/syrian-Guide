@@ -8,14 +8,14 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 vi.mock('@/lib/auth', () => ({
-  auth: vi.fn(),
+  getUser: vi.fn(),
 }))
 
 import { POST } from '@/app/api/guides/apply/route'
 import { prisma } from '@/lib/prisma'
-import { auth } from '@/lib/auth'
+import { getUser } from '@/lib/auth'
 
-const mockedAuth = vi.mocked(auth)
+const mockedGetUser = vi.mocked(getUser)
 const mockedFindGuide = vi.mocked(prisma.guide.findUnique)
 const mockedCreateGuide = vi.mocked(prisma.guide.create)
 const mockedUpdateUser = vi.mocked(prisma.user.update)
@@ -51,7 +51,7 @@ function applyRequest(body: Record<string, unknown>) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockedAuth.mockResolvedValue({ user: { id: 'user_1' } } as never)
+  mockedGetUser.mockResolvedValue({ id: 'user_1' } as never)
   mockedFindGuide.mockResolvedValue(null as never)
   mockedCreateGuide.mockResolvedValue({ id: 'guide_new' } as never)
   mockedUpdateUser.mockResolvedValue({} as never)
@@ -61,7 +61,7 @@ beforeEach(() => {
 
 describe('POST /api/guides/apply (become a guide)', () => {
   it('returns 401 when not logged in', async () => {
-    mockedAuth.mockResolvedValue(null as never)
+    mockedGetUser.mockResolvedValue(null as never)
     const res = await POST(applyRequest(studentOffer) as never)
     expect(res.status).toBe(401)
     expect(mockedCreateGuide).not.toHaveBeenCalled()
