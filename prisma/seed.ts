@@ -1,6 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 import { prisma } from '../src/lib/prisma'
 
+// IMPORTANT: DATABASE_URL must point at the SAME Supabase project as
+// NEXT_PUBLIC_SUPABASE_URL. The auth admin API creates users on Supabase and
+// the DB trigger mirrors them into public."User" THERE — if Prisma is pointed
+// at a different database, the update below fails with P2025 (record not found).
+
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SECRET_KEY!,
@@ -40,8 +45,8 @@ async function ensureAuthUser(email: string, password: string, name: string): Pr
 }
 
 async function main() {
-  const ahmadId = await ensureAuthUser('ahmad.guide@example.com', 'password123', 'Ahmad Al-Dimashqi')
-  const laylaId = await ensureAuthUser('layla.guide@example.com', 'password123', 'Layla Haddad')
+  const ahmadId = await ensureAuthUser('ahmad.guide@example.com', 'SyriaGuide-Demo-2026!', 'Ahmad Al-Dimashqi')
+  const laylaId = await ensureAuthUser('layla.guide@example.com', 'SyriaGuide-Demo-2026!', 'Layla Haddad')
 
   // Student guide: hired by the hour
   await prisma.user.update({
