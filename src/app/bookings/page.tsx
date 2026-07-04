@@ -3,17 +3,17 @@ export const dynamic = 'force-dynamic';
 import React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
+import { getUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import NavActions from '@/components/NavActions';
 import BookingStatusBadge from '@/components/BookingStatusBadge';
 
 export default async function MyBookingsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/login');
+  const user = await getUser();
+  if (!user) redirect('/login');
 
   const bookings = await prisma.booking.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     include: {
       guide: { include: { user: true } },
       slot: true,
