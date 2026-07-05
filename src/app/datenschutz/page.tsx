@@ -59,12 +59,20 @@ export default function DatenschutzPage() {
             Zur Abwicklung von Zahlungen nutzen wir den Zahlungsdienstleister Stripe. Bei einer Buchung werden Sie zu Stripe Checkout weitergeleitet; die Eingabe Ihrer Zahlungsdaten erfolgt ausschließlich auf den Servern von Stripe. Zahlungs- bzw. Kartendaten werden zu keinem Zeitpunkt auf unseren eigenen Servern gespeichert oder verarbeitet. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Mit Supabase und Stripe bestehen bzw. werden vor Produktivbetrieb entsprechende Auftragsverarbeitungsverträge gemäß Art. 28 DSGVO abgeschlossen.
           </p>
 
-          <h2 style={h2Style}>5. Cookies</h2>
+          <h2 style={h2Style}>5. Schriftarten (Google Fonts)</h2>
+          <p style={pStyle}>
+            Zur einheitlichen Darstellung der Typografie bindet diese Website derzeit Web-Schriftarten (Plus Jakarta Sans, Inter und Noto Sans Arabic) von den Servern von Google (Google Fonts) ein. Beim Aufruf einer Seite stellt Ihr Browser eine Verbindung zu einem Google-Server her und übermittelt dabei Ihre IP-Adresse an Google, damit die Schriftarten geladen und die Website in der vorgesehenen Gestaltung angezeigt werden können. Google kann diese Daten hierbei verarbeiten; Anbieter ist die Google Ireland Ltd., Gordon House, Barrow Street, Dublin 4, Irland, wobei eine Übermittlung in die USA nicht ausgeschlossen werden kann. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer einheitlichen Darstellung des Angebots).
+          </p>
+          <p style={pStyle}>
+            <strong>[PLATZHALTER: ggf. auf selbst-gehostete Schriftarten umstellen — siehe Datenschutzhinweis]</strong> Um diese Datenübermittlung an Google zu vermeiden, sollten die Schriftarten vor dem Start idealerweise lokal (selbst-gehostet) ausgeliefert werden.
+          </p>
+
+          <h2 style={h2Style}>6. Cookies</h2>
           <p style={pStyle}>
             Wir setzen ausschließlich technisch notwendige Cookies ein, die für den Betrieb der Anmelde- und Sitzungsfunktion (Auth-Session-Cookies) erforderlich sind. Diese Cookies dienen keinem Tracking und keiner Analyse Ihres Nutzungsverhaltens und werden nicht zu Marketing- oder Werbezwecken eingesetzt. Da es sich ausschließlich um technisch notwendige Cookies handelt, ist gemäß § 25 Abs. 2 Nr. 2 TTDSG keine gesonderte Einwilligung erforderlich.
           </p>
 
-          <h2 style={h2Style}>6. Ihre Rechte als betroffene Person</h2>
+          <h2 style={h2Style}>7. Ihre Rechte als betroffene Person</h2>
           <p style={pStyle}>
             Ihnen stehen als betroffene Person hinsichtlich der Sie betreffenden personenbezogenen Daten grundsätzlich folgende Rechte zu:
           </p>
@@ -80,7 +88,7 @@ export default function DatenschutzPage() {
             Darüber hinaus haben Sie das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über die Verarbeitung Ihrer personenbezogenen Daten durch uns zu beschweren.
           </p>
 
-          <h2 style={h2Style}>7. Speicherdauer</h2>
+          <h2 style={h2Style}>8. Speicherdauer</h2>
           <p style={pStyle}>
             Wir speichern personenbezogene Daten nur so lange, wie dies für die Erbringung unserer Leistungen sowie zur Erfüllung gesetzlicher Aufbewahrungspflichten erforderlich ist. Nach Wegfall des jeweiligen Zwecks bzw. nach Ablauf gesetzlicher Aufbewahrungsfristen werden die Daten gelöscht oder anonymisiert.
           </p>
