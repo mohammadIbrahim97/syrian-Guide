@@ -44,6 +44,7 @@ model Guide {
   userId          String    @unique
   bio             String    @db.Text
   city            String
+  phone           String? // WhatsApp/phone — revealed to the tourist only after a paid booking, never publicly
   languages       String[] // e.g., ["English", "Arabic", "German"]
   guideType       GuideType @default(STUDENT)
   university      String? // students: which university they attend

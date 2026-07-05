@@ -59,6 +59,7 @@ async function main() {
           create: {
             bio: 'History student and expert in Umayyad history. I love showing visitors the ancient alleys and the Umayyad Mosque.',
             city: 'Damascus',
+            phone: '+963 944 123 456',
             languages: ['Arabic', 'English'],
             guideType: 'STUDENT',
             university: 'Damascus University',
@@ -67,7 +68,8 @@ async function main() {
             reviewCount: 42,
             isVerified: true,
           },
-          update: {},
+          // Backfill the demo phone on already-seeded databases
+          update: { phone: '+963 944 123 456' },
         },
       },
     },
@@ -84,6 +86,7 @@ async function main() {
           create: {
             bio: 'Licensed tour guide working with Aleppo Heritage Tours. My signature package covers the Citadel, the old souks, and traditional food stops.',
             city: 'Aleppo',
+            phone: '+963 933 987 654',
             languages: ['Arabic', 'English', 'French'],
             guideType: 'PROFESSIONAL',
             packagePrice: 25.0,
@@ -93,7 +96,8 @@ async function main() {
             reviewCount: 118,
             isVerified: true,
           },
-          update: {},
+          // Backfill the demo phone on already-seeded databases
+          update: { phone: '+963 933 987 654' },
         },
       },
     },

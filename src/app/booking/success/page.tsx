@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import React from 'react';
 import Link from 'next/link';
 import { getVerifiedBooking } from '@/lib/booking-confirmation';
+import GuidePhoneLink from '@/components/GuidePhoneLink';
 
 export default async function BookingSuccessPage({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
   const { session_id } = await searchParams;
@@ -92,7 +93,12 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
                   <strong>Next step:</strong> email your guide at{' '}
                   <a href={`mailto:${booking.guide.user.email}`} style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}>
                     {booking.guide.user.email}
-                  </a>{' '}
+                  </a>
+                  {booking.guide.phone && (
+                    <>
+                      {' '}or message them on WhatsApp at <GuidePhoneLink phone={booking.guide.phone} />
+                    </>
+                  )}{' '}
                   to agree on a meeting point. You&apos;ll always find this booking under My bookings.
                 </div>
               )}
