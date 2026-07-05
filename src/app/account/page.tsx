@@ -145,7 +145,7 @@ export default async function GuideDashboardPage() {
                     </td>
                     <td style={{ padding: '12px' }}>
                       <div style={{ fontWeight: 600 }}>{b.user.name || '—'}</div>
-                      <div style={{ color: 'var(--neutral-gray)' }}>{b.user.email}</div>
+                      <a href={`mailto:${b.user.email}`} style={{ color: 'var(--brand-indigo)' }}>{b.user.email}</a>
                     </td>
                     <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
                       {b.durationHours ? `${b.durationHours} hour(s)` : `${b.participants} person(s)`}
