@@ -55,6 +55,7 @@ All are required in production. See [.env.example](.env.example) for details and
 | `APP_URL` | Public base URL of the app; used for Stripe Checkout redirect URLs. |
 | `STRIPE_SECRET_KEY` | Stripe API secret key. |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret of the webhook endpoint. **Required** — the webhook rejects unsigned events, and without it bookings are never confirmed and abandoned checkouts never release their slots. |
+| `NEXT_PUBLIC_SENTRY_DSN` | **Optional.** Sentry error-monitoring DSN. Leave unset to disable Sentry entirely (default); set it to activate error capture. |
 
 ## Deployment (minimal path)
 
