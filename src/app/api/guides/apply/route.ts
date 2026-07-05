@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       hourlyRate,
       packagePrice,
       packageDuration,
+      phone: phoneRaw,
     } = await request.json();
 
     if (!bio || !city || !Array.isArray(languages) || languages.length === 0) {
@@ -43,6 +44,19 @@ export async function POST(request: NextRequest) {
 
     const groupSize = Number.isInteger(maxGroupSize) && maxGroupSize > 0 ? maxGroupSize : 1;
 
+    // Optional WhatsApp/phone number. Only shared with a tourist after a paid
+    // booking (never on public surfaces), but validated here on the way in.
+    let phone: string | null = null;
+    if (phoneRaw != null && phoneRaw !== "") {
+      if (typeof phoneRaw !== "string" || !/^\+?[\d\s\-()]{6,20}$/.test(phoneRaw.trim())) {
+        return NextResponse.json(
+          { error: "Please enter a valid phone number, e.g. +963 944 123 456" },
+          { status: 400 }
+        );
+      }
+      phone = phoneRaw.trim();
+    }
+
     // Students are hired by the hour; professionals sell a fixed package
     let data;
     if (guideType === "STUDENT") {
@@ -54,6 +68,7 @@ export async function POST(request: NextRequest) {
         guideType,
         bio,
         city,
+        phone,
         languages,
         university: university || null,
         hourlyRate,
@@ -69,6 +84,7 @@ export async function POST(request: NextRequest) {
         guideType,
         bio,
         city,
+        phone,
         languages,
         packagePrice,
         packageDuration: typeof packageDuration === "number" ? packageDuration : null,

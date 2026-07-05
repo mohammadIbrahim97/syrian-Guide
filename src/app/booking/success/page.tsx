@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import React from 'react';
 import Link from 'next/link';
 import { getVerifiedBooking } from '@/lib/booking-confirmation';
+import GuidePhoneLink from '@/components/GuidePhoneLink';
 
 export default async function BookingSuccessPage({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
   const { session_id } = await searchParams;
@@ -45,7 +46,8 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
                 ) : (
                   <>
                     Your reservation with <strong>{booking.guide.user.name}</strong> is held while we wait for
-                    payment confirmation. Refresh this page in a moment, or check your bookings later.
+                    payment confirmation. Refresh this page in a moment, or check{' '}
+                    <Link href="/bookings" style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}>your bookings</Link> later.
                   </>
                 )}
               </p>
@@ -82,6 +84,24 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
                   <div style={{ fontSize: '13px', fontWeight: 500, fontFamily: 'monospace' }}>{booking.id.slice(0, 12)}…</div>
                 </div>
               </div>
+
+              {confirmed && (
+                <div style={{
+                  backgroundColor: 'var(--brand-indigo-soft)', borderRadius: '12px', padding: '16px 24px',
+                  fontSize: '15px', lineHeight: 1.6, textAlign: 'left', marginBottom: '32px',
+                }}>
+                  <strong>Next step:</strong> email your guide at{' '}
+                  <a href={`mailto:${booking.guide.user.email}`} style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}>
+                    {booking.guide.user.email}
+                  </a>
+                  {booking.guide.phone && (
+                    <>
+                      {' '}or message them on WhatsApp at <GuidePhoneLink phone={booking.guide.phone} />
+                    </>
+                  )}{' '}
+                  to agree on a meeting point. You&apos;ll always find this booking under My bookings.
+                </div>
+              )}
             </>
           ) : (
             <p style={{ fontSize: '16px', color: 'var(--neutral-gray)', marginBottom: '32px' }}>
@@ -90,9 +110,14 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
             </p>
           )}
 
-          <Link href="/" className="btn btn-primary btn-pill" style={{ padding: '14px 32px', fontSize: '16px' }}>
-            Explore More Tours
-          </Link>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/bookings" className="btn btn-secondary btn-pill" style={{ padding: '14px 32px', fontSize: '16px' }}>
+              View My Bookings
+            </Link>
+            <Link href="/" className="btn btn-primary btn-pill" style={{ padding: '14px 32px', fontSize: '16px' }}>
+              Explore More Tours
+            </Link>
+          </div>
         </div>
       </main>
     </div>

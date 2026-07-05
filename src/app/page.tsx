@@ -1,15 +1,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { publicGuideSelect } from '@/lib/public-guide';
 import SearchableGuides from '@/components/SearchableGuides';
 import NavActions from '@/components/NavActions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  // Fetch initial guides on the server for fast first paint
+  // Fetch initial guides on the server for fast first paint.
+  // publicGuideSelect: these rows are serialized into the client payload,
+  // so contact fields must never be included here.
   const initialGuides = await prisma.guide.findMany({
-    include: { user: true },
+    select: publicGuideSelect,
     take: 20,
     orderBy: { rating: 'desc' }
   });

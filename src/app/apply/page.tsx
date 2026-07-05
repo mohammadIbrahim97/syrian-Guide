@@ -20,6 +20,7 @@ export default function ApplyPage() {
   const [form, setForm] = useState({
     bio: '',
     city: '',
+    phone: '',
     university: '',
     hourlyRate: '',
     packagePrice: '',
@@ -51,6 +52,7 @@ export default function ApplyPage() {
         guideType,
         bio: form.bio,
         city: form.city,
+        phone: form.phone,
         languages,
         maxGroupSize: Number(form.maxGroupSize),
         ...(isStudent
@@ -222,6 +224,15 @@ export default function ApplyPage() {
                 <label style={labelStyle}>Max group size</label>
                 <input type="number" required min="1" step="1" value={form.maxGroupSize}
                   onChange={e => setForm(f => ({ ...f, maxGroupSize: e.target.value }))} style={inputStyle} />
+              </div>
+
+              <div>
+                <label style={labelStyle}>WhatsApp number (optional)</label>
+                <input type="tel" value={form.phone} placeholder="+963 944 123 456"
+                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} style={inputStyle} />
+                <p style={{ fontSize: '13px', color: 'var(--neutral-gray)', margin: '8px 0 0 0' }}>
+                  Include your country code. Only shared with a traveler after they&apos;ve paid for a booking — never shown publicly.
+                </p>
               </div>
 
               <button

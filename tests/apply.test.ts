@@ -150,4 +150,25 @@ describe('POST /api/guides/apply (become a guide)', () => {
     const createArg = mockedCreateGuide.mock.calls[0][0].data as Record<string, unknown>
     expect(createArg.hourlyRate).toBeUndefined()
   })
+
+  it('stores a trimmed WhatsApp number when provided', async () => {
+    const res = await POST(applyRequest({ ...studentOffer, phone: ' +963 944 123 456 ' }) as never)
+    expect(res.status).toBe(201)
+    expect(mockedCreateGuide).toHaveBeenCalledWith({
+      data: expect.objectContaining({ phone: '+963 944 123 456' }),
+    })
+  })
+
+  it('stores null when no phone is provided', async () => {
+    const res = await POST(applyRequest(studentOffer) as never)
+    expect(res.status).toBe(201)
+    const createArg = mockedCreateGuide.mock.calls[0][0].data as Record<string, unknown>
+    expect(createArg.phone).toBeNull()
+  })
+
+  it('rejects a malformed phone number', async () => {
+    const res = await POST(applyRequest({ ...studentOffer, phone: 'call me maybe' }) as never)
+    expect(res.status).toBe(400)
+    expect(mockedCreateGuide).not.toHaveBeenCalled()
+  })
 })

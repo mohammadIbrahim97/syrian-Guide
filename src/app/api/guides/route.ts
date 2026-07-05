@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { publicGuideSelect } from '@/lib/public-guide';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
   try {
     const guides = await prisma.guide.findMany({
       where,
-      include: { user: true },
+      select: publicGuideSelect,
       orderBy: { rating: 'desc' },
       take: 20,
     });

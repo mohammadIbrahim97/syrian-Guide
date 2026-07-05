@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import NavActions from '@/components/NavActions';
 import BookingStatusBadge from '@/components/BookingStatusBadge';
+import GuidePhoneLink from '@/components/GuidePhoneLink';
 
 export default async function MyBookingsPage() {
   const user = await getUser();
@@ -43,7 +44,8 @@ export default async function MyBookingsPage() {
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <h1 style={{ fontSize: '32px', fontWeight: 800, margin: '0 0 6px 0' }}>My bookings</h1>
           <p style={{ fontSize: '15px', color: 'var(--neutral-gray)', margin: '0 0 32px 0' }}>
-            Your tours with local guides. A booking is confirmed once payment goes through.
+            Your tours with local guides. A booking is confirmed once payment goes through —
+            you then get your guide&apos;s contact details to agree on a meeting point.
           </p>
 
           {bookings.length === 0 ? (
@@ -77,6 +79,22 @@ export default async function MyBookingsPage() {
                     <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginTop: '2px' }}>
                       {b.durationHours ? `${b.durationHours} hour(s)` : `${b.participants} person(s)`} · {b.guide.city}
                     </div>
+                    {/* Contact is only revealed once the booking is paid, so guide contact
+                        details can't be harvested by starting checkouts without paying. */}
+                    {b.status === 'CONFIRMED' && (
+                      <div style={{ fontSize: '14px', marginTop: '8px' }}>
+                        <a href={`mailto:${b.guide.user.email}`} style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}>
+                          ✉ {b.guide.user.email}
+                        </a>
+                        {b.guide.phone && (
+                          <>
+                            {' · '}
+                            <GuidePhoneLink phone={b.guide.phone} />
+                          </>
+                        )}
+                        <span style={{ color: 'var(--neutral-gray)' }}> · contact your guide to arrange the meeting point</span>
+                      </div>
+                    )}
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '17px', fontWeight: 700, marginBottom: '8px' }}>€{b.totalPrice.toFixed(2)}</div>
