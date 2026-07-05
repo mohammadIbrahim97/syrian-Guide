@@ -3,13 +3,19 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    searchParams.get('error') === 'link-expired'
+      ? 'That link is invalid or has expired. Please request a new one.'
+      : ''
+  );
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   const [form, setForm] = useState({ name: '', email: '', password: '' });
 
@@ -22,13 +28,19 @@ export default function LoginPage() {
 
     try {
       if (isRegister) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
           options: { data: { name: form.name } },
         });
         if (error) {
           setError(error.message);
+          setLoading(false);
+          return;
+        }
+        if (!data.session) {
+          // Email confirmation is enabled — no session until the link is clicked.
+          setConfirmationSent(true);
           setLoading(false);
           return;
         }
@@ -86,82 +98,111 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {isRegister && (
-              <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="Ahmad Al-Rashid"
+          {confirmationSent ? (
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '15px', color: 'var(--neutral-dark)', marginBottom: '12px', fontWeight: 600 }}>
+                Check your inbox
+              </p>
+              <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>
+                We sent a confirmation link to <strong>{form.email}</strong>. Click it to activate your account, then log in.
+              </p>
+            </div>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {isRegister && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={form.name}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="Ahmad Al-Rashid"
+                      style={{
+                        width: '100%', padding: '12px 16px', borderRadius: '8px',
+                        border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="you@example.com"
+                    style={{
+                      width: '100%', padding: '12px 16px', borderRadius: '8px',
+                      border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    placeholder="At least 6 characters"
+                    style={{
+                      width: '100%', padding: '12px 16px', borderRadius: '8px',
+                      border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary"
                   style={{
-                    width: '100%', padding: '12px 16px', borderRadius: '8px',
-                    border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
+                    width: '100%', padding: '14px', fontSize: '16px', borderRadius: '8px',
+                    opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer',
                   }}
-                />
+                >
+                  {loading ? 'Please wait…' : isRegister ? 'Create Account' : 'Log In'}
+                </button>
+              </form>
+
+              {!isRegister && (
+                <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                  <Link href="/forgot-password" style={{ fontSize: '14px', color: 'var(--neutral-gray)', textDecoration: 'underline' }}>
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
+
+              <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: 'var(--neutral-gray)' }}>
+                {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+                <button
+                  onClick={() => { setIsRegister(!isRegister); setError(''); }}
+                  style={{
+                    background: 'none', border: 'none', color: 'var(--brand-coral)',
+                    fontWeight: 600, cursor: 'pointer', fontSize: '14px',
+                  }}
+                >
+                  {isRegister ? 'Log In' : 'Sign Up'}
+                </button>
               </div>
-            )}
-
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Email</label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="you@example.com"
-                style={{
-                  width: '100%', padding: '12px 16px', borderRadius: '8px',
-                  border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Password</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder="At least 6 characters"
-                style={{
-                  width: '100%', padding: '12px 16px', borderRadius: '8px',
-                  border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', boxSizing: 'border-box',
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary"
-              style={{
-                width: '100%', padding: '14px', fontSize: '16px', borderRadius: '8px',
-                opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {loading ? 'Please wait…' : isRegister ? 'Create Account' : 'Log In'}
-            </button>
-          </form>
-
-          <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: 'var(--neutral-gray)' }}>
-            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button
-              onClick={() => { setIsRegister(!isRegister); setError(''); }}
-              style={{
-                background: 'none', border: 'none', color: 'var(--brand-coral)',
-                fontWeight: 600, cursor: 'pointer', fontSize: '14px',
-              }}
-            >
-              {isRegister ? 'Log In' : 'Sign Up'}
-            </button>
-          </div>
+            </>
+          )}
         </div>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense>
+      <LoginForm />
+    </React.Suspense>
   );
 }
