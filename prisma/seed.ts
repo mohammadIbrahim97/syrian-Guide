@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { prisma } from '../src/lib/prisma'
 
@@ -11,6 +12,14 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SECRET_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 )
+
+// Password for the demo guide logins. A repo-committed password would let
+// anyone log in as a verified guide in production, so the default is random
+// per run (demo guides then serve as display data only). Set
+// SEED_GUIDE_PASSWORD when you actually need to log in as a demo guide.
+// Note: only applied when the auth user is first CREATED — re-running the
+// seed never resets an existing user's password.
+const DEMO_PASSWORD = process.env.SEED_GUIDE_PASSWORD ?? randomBytes(16).toString('base64url')
 
 // A date N days from now, normalized to midnight UTC (AvailabilitySlot.date is a DATE column)
 function daysFromNow(days: number): Date {
@@ -45,8 +54,8 @@ async function ensureAuthUser(email: string, password: string, name: string): Pr
 }
 
 async function main() {
-  const ahmadId = await ensureAuthUser('ahmad.guide@example.com', 'SyriaGuide-Demo-2026!', 'Ahmad Al-Dimashqi')
-  const laylaId = await ensureAuthUser('layla.guide@example.com', 'SyriaGuide-Demo-2026!', 'Layla Haddad')
+  const ahmadId = await ensureAuthUser('ahmad.guide@example.com', DEMO_PASSWORD, 'Ahmad Al-Dimashqi')
+  const laylaId = await ensureAuthUser('layla.guide@example.com', DEMO_PASSWORD, 'Layla Haddad')
 
   // Student guide: hired by the hour
   await prisma.user.update({
