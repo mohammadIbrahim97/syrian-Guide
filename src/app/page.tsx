@@ -46,7 +46,16 @@ export default async function HomePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '60px', width: 'auto', objectFit: 'contain', margin: '-10px 0 -10px -10px' }} />
           </div>
-          <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>© 2026 SyriaGuide. All rights reserved.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>
+              <Link href="/impressum" style={{ color: 'var(--neutral-gray)' }}>Impressum</Link>
+              {' · '}
+              <Link href="/datenschutz" style={{ color: 'var(--neutral-gray)' }}>Datenschutz</Link>
+              {' · '}
+              <Link href="/agb" style={{ color: 'var(--neutral-gray)' }}>AGB</Link>
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>© 2026 SyriaGuide. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
