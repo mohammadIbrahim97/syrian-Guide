@@ -1,20 +1,28 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function LoginForm() {
-  const router = useRouter();
+// Reads the ?error query param inside its own Suspense boundary so the rest of
+// the login page can still prerender statically. Renders nothing; it just
+// pushes the banner message up via callback.
+function LinkExpiredParam({ onDetected }: { onDetected: (msg: string) => void }) {
   const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('error') === 'link-expired') {
+      onDetected('That link is invalid or has expired. Please request a new one.');
+    }
+  }, [searchParams, onDetected]);
+  return null;
+}
+
+export default function LoginPage() {
+  const router = useRouter();
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(
-    searchParams.get('error') === 'link-expired'
-      ? 'That link is invalid or has expired. Please request a new one.'
-      : ''
-  );
+  const [error, setError] = useState('');
   const [confirmationSent, setConfirmationSent] = useState(false);
 
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -89,6 +97,10 @@ function LoginForm() {
             {isRegister ? 'Join SyriaGuide to book private tours' : 'Log in to continue your journey'}
           </p>
 
+          <Suspense fallback={null}>
+            <LinkExpiredParam onDetected={setError} />
+          </Suspense>
+
           {error && (
             <div style={{
               padding: '12px 16px', borderRadius: '8px', backgroundColor: '#FEE2E2',
@@ -117,7 +129,7 @@ function LoginForm() {
                       type="text"
                       required
                       value={form.name}
-                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      onChange={e => { setError(''); setForm(f => ({ ...f, name: e.target.value })); }}
                       placeholder="Ahmad Al-Rashid"
                       style={{
                         width: '100%', padding: '12px 16px', borderRadius: '8px',
@@ -133,7 +145,7 @@ function LoginForm() {
                     type="email"
                     required
                     value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    onChange={e => { setError(''); setForm(f => ({ ...f, email: e.target.value })); }}
                     placeholder="you@example.com"
                     style={{
                       width: '100%', padding: '12px 16px', borderRadius: '8px',
@@ -149,7 +161,7 @@ function LoginForm() {
                     required
                     minLength={6}
                     value={form.password}
-                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    onChange={e => { setError(''); setForm(f => ({ ...f, password: e.target.value })); }}
                     placeholder="At least 6 characters"
                     style={{
                       width: '100%', padding: '12px 16px', borderRadius: '8px',
@@ -196,13 +208,5 @@ function LoginForm() {
         </div>
       </main>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <React.Suspense>
-      <LoginForm />
-    </React.Suspense>
   );
 }
