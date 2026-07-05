@@ -50,6 +50,16 @@ describe('GET /auth/confirm (auth email link verification)', () => {
     expect(res.headers.get('location')).toBe('http://localhost/')
   })
 
+  it('rejects backslash-normalized next (open-redirect bypass)', async () => {
+    const res = await GET(confirmRequest('?code=abc123&next=/%5Cevil.example') as never)
+    expect(res.headers.get('location')).toBe('http://localhost/')
+  })
+
+  it('rejects tab-injected protocol-relative next (open-redirect bypass)', async () => {
+    const res = await GET(confirmRequest('?code=abc123&next=/%09//evil.example') as never)
+    expect(res.headers.get('location')).toBe('http://localhost/')
+  })
+
   it('redirects to login?error=link-expired when the code exchange fails', async () => {
     mockedExchange.mockResolvedValue({ error: { message: 'expired' } })
     const res = await GET(confirmRequest('?code=bad') as never)

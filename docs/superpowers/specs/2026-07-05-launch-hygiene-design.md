@@ -22,7 +22,7 @@ Handles both Supabase verification link styles in one route:
 - `?code=` — default email templates (PKCE). Server-side `exchangeCodeForSession(code)` works because `@supabase/ssr` persists the code verifier in a cookie. Caveat (accepted): the link must be opened in the same browser that requested it.
 - `?token_hash=&type=` — the template style used once custom SMTP/templates exist. `verifyOtp({ type, token_hash })`. Works cross-browser.
 
-On success: session cookies set, redirect to `?next=` (sanitized: must start with `/`, not `//` — no open redirect). On any failure: redirect `/login?error=link-expired`.
+On success: session cookies set, redirect to `?next=` (sanitized by resolving it against the request origin and rejecting it — falling back to `/` — if the resolved origin differs; comparing the parsed origin is immune to URL-normalization tricks like `/\evil.com` or a tab-injected `/\t//evil.com` that a `/`-vs-`//` string check would let through — no open redirect). On any failure: redirect `/login?error=link-expired`.
 
 ### 2. Password reset
 

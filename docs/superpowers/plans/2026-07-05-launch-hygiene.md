@@ -75,6 +75,16 @@ describe('GET /auth/confirm (auth email link verification)', () => {
     expect(res.headers.get('location')).toBe('http://localhost/')
   })
 
+  it('rejects backslash-normalized next (open-redirect bypass)', async () => {
+    const res = await GET(confirmRequest('?code=abc123&next=/%5Cevil.example') as never)
+    expect(res.headers.get('location')).toBe('http://localhost/')
+  })
+
+  it('rejects tab-injected protocol-relative next (open-redirect bypass)', async () => {
+    const res = await GET(confirmRequest('?code=abc123&next=/%09//evil.example') as never)
+    expect(res.headers.get('location')).toBe('http://localhost/')
+  })
+
   it('redirects to login?error=link-expired when the code exchange fails', async () => {
     mockedExchange.mockResolvedValue({ error: { message: 'expired' } })
     const res = await GET(confirmRequest('?code=bad') as never)
@@ -114,26 +124,35 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = searchParams.get("next") ?? "/";
 
-  // Same-origin relative paths only — no open redirect.
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  // Resolve `next` and reject anything that escapes our origin. Comparing the
+  // parsed origin (rather than string-checking for "/"/"//") is immune to URL
+  // normalization tricks like "/\evil.com" or a tab-injected "/\t//evil.com",
+  // both of which new URL() would otherwise turn cross-origin.
+  const origin = new URL(request.url).origin;
+  let safeNext = "/";
+  try {
+    const target = new URL(searchParams.get("next") ?? "/", origin);
+    if (target.origin === origin) safeNext = target.pathname + target.search;
+  } catch {
+    safeNext = "/";
+  }
 
   const supabase = await createClient();
 
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(safeNext, request.url));
+    if (!error) return NextResponse.redirect(new URL(safeNext, origin));
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
-    if (!error) return NextResponse.redirect(new URL(safeNext, request.url));
+    if (!error) return NextResponse.redirect(new URL(safeNext, origin));
   }
 
   return NextResponse.redirect(new URL("/login?error=link-expired", request.url));
 }
 ```
 
-- [ ] **Step 4: Run — expect 8/8 pass**, then full suite (49 existing + 8 new = 57): `npx vitest run`
+- [ ] **Step 4: Run — expect 10/10 pass**, then full suite (49 existing + 10 new = 59): `npx vitest run`
 - [ ] **Step 5: Commit** — `feat: auth email link verification route`
 
 ---
