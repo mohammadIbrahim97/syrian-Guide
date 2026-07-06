@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import Avatar from '@/components/Avatar';
 
 interface Guide {
   id: string;
@@ -240,9 +241,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                       <div className="wl-card-img" style={{ background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))', width: '100%', height: '100%' }} />
 
                       <div className="wl-card-avatar-container">
-                        <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--brand-coral)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '20px' }}>
-                          {guide.user.name ? guide.user.name.substring(0, 1).toUpperCase() : 'SG'}
-                        </div>
+                        <Avatar image={guide.user.image} name={guide.user.name} fontSize={20} />
                       </div>
                     </div>
 

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
 import NavActions from '@/components/NavActions';
+import Avatar from '@/components/Avatar';
 import { getUser } from '@/lib/auth';
 
 export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -54,8 +55,8 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
 
               {/* Profile Header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'var(--brand-coral)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', fontWeight: 800, border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                  {guide.user.name ? guide.user.name.substring(0, 1).toUpperCase() : 'SG'}
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', flexShrink: 0 }}>
+                  <Avatar image={guide.user.image} name={guide.user.name} fontSize={36} />
                 </div>
                 <div>
                   <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '0 0 8px 0', color: 'var(--neutral-dark)' }}>{guide.user.name}</h1>
