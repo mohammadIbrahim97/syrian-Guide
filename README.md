@@ -23,6 +23,7 @@ npm install
 # 4. Apply the database schema and seed demo guides
 npm run migrate:deploy
 npx prisma db seed
+npm run setup:storage   # one-time: create the public avatars Storage bucket
 
 # 5. Run the dev server
 npm run dev            # http://localhost:3000
@@ -63,8 +64,9 @@ The intended production setup is a managed platform (e.g. **Vercel**) plus the *
 
 1. Set all environment variables in the platform, with `DATABASE_URL` pointed at the Supabase session pooler and `APP_URL` set to the production domain.
 2. Apply migrations against the production database (see [Database & migrations](#database--migrations-prisma) below — this does **not** happen during the app build).
-3. Deploy. The build is `prisma generate && next build`; no extra configuration is needed.
-4. In the Stripe dashboard, add a webhook endpoint pointing at `https://<your-domain>/api/webhook` subscribed to `checkout.session.completed` and `checkout.session.expired`, then put its signing secret into `STRIPE_WEBHOOK_SECRET` and redeploy.
+3. Run `npm run setup:storage` once per environment to create the public `avatars` Storage bucket (idempotent; safe to re-run).
+4. Deploy. The build is `prisma generate && next build`; no extra configuration is needed.
+5. In the Stripe dashboard, add a webhook endpoint pointing at `https://<your-domain>/api/webhook` subscribed to `checkout.session.completed` and `checkout.session.expired`, then put its signing secret into `STRIPE_WEBHOOK_SECRET` and redeploy.
 
 > **Note:** `Dockerfile` and `docker-compose.yml` are **local development only** (dev server, hardcoded dev credentials, no Stripe config). They are not a production deployment path.
 
