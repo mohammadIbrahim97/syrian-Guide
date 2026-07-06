@@ -9,6 +9,7 @@ import NavActions from '@/components/NavActions';
 import AvailabilityManager from '@/components/AvailabilityManager';
 import BookingStatusBadge from '@/components/BookingStatusBadge';
 import ProfilePhotoCard from '@/components/ProfilePhotoCard';
+import TourGalleryCard from '@/components/TourGalleryCard';
 
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'white', borderRadius: '16px', padding: '32px',
@@ -63,7 +64,7 @@ export default async function GuideDashboardPage() {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
 
-  const [slots, bookings] = await Promise.all([
+  const [slots, bookings, photos] = await Promise.all([
     prisma.availabilitySlot.findMany({
       where: { guideId: guide.id, date: { gte: today } },
       orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
@@ -73,6 +74,11 @@ export default async function GuideDashboardPage() {
       include: { user: true, slot: true },
       orderBy: { date: 'desc' },
       take: 50,
+    }),
+    prisma.guidePhoto.findMany({
+      where: { guideId: guide.id },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, url: true },
     }),
   ]);
 
@@ -94,6 +100,9 @@ export default async function GuideDashboardPage() {
       </div>
 
       <ProfilePhotoCard currentImage={user.image} name={user.name} />
+
+      {/* Tour gallery (issue #26: up to 10 past-tour photos on the public profile) */}
+      <TourGalleryCard photos={photos} />
 
       {/* Availability (issue: guides must be able to open their calendar) */}
       <section style={{ ...cardStyle, marginBottom: '32px' }}>
