@@ -47,7 +47,7 @@ export function createAdminClient() {
   8. `prisma.user.update({ where: { id: user.id }, data: { image: publicUrl } })`.
   9. Return `{ url }`, 200.
 
-  **Stale-path cleanup:** because `ext` is part of the path, switching formats (png→jpg) would leave the old object. Before upload, best-effort `remove` of the other-extension variants for this user (`avatar.jpg/png/webp` except the new one). Keeps at most one object per guide.
+  **Stale-path cleanup:** because `ext` is part of the path, switching formats (png→jpg) would leave the old object. After a successful upload, best-effort `remove` of the other-extension variants for this user (`avatar.jpg/png/webp` except the new one) — never before, so a failed upload doesn't delete the old object while `User.image` still references it. Keeps at most one object per guide.
 
 - **`DELETE`**: auth + guide check as above; remove all `avatar.*` variants for the user from the bucket (best-effort); `prisma.user.update` set `image: null`; return `{ ok: true }`. Reverts to the initial-circle.
 

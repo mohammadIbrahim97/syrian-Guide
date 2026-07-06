@@ -313,10 +313,6 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
   const path = `${user.id}/avatar.${ext}`;
 
-  // Drop other-extension variants so a guide keeps at most one avatar object.
-  const stale = avatarPaths(user.id).filter((p) => p !== path);
-  await admin.storage.from(BUCKET).remove(stale);
-
   const buffer = Buffer.from(await file.arrayBuffer());
   const { error: uploadErr } = await admin.storage
     .from(BUCKET)
@@ -324,6 +320,12 @@ export async function POST(request: NextRequest) {
   if (uploadErr) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
+
+  // Drop other-extension variants so a guide keeps at most one avatar object.
+  // Runs only after a successful upload so a failed upload never leaves the
+  // old avatar deleted while User.image still points at it.
+  const stale = avatarPaths(user.id).filter((p) => p !== path);
+  await admin.storage.from(BUCKET).remove(stale);
 
   // Deterministic path → cache-bust so a replaced photo isn't served stale.
   const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(path);
