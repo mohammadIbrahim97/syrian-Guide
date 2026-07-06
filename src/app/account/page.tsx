@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma';
 import NavActions from '@/components/NavActions';
 import AvailabilityManager from '@/components/AvailabilityManager';
 import BookingStatusBadge from '@/components/BookingStatusBadge';
+import ProfilePhotoCard from '@/components/ProfilePhotoCard';
 
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'white', borderRadius: '16px', padding: '32px',
@@ -91,6 +92,8 @@ export default async function GuideDashboardPage() {
           View your public profile →
         </Link>
       </div>
+
+      <ProfilePhotoCard currentImage={user.image} name={user.name} />
 
       {/* Availability (issue: guides must be able to open their calendar) */}
       <section style={{ ...cardStyle, marginBottom: '32px' }}>
