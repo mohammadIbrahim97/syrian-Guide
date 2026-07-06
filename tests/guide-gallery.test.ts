@@ -11,8 +11,10 @@ vi.mock('@/lib/prisma', () => ({
       count: vi.fn(),
       create: vi.fn(),
       findFirst: vi.fn(),
-      delete: vi.fn(),
+      deleteMany: vi.fn(),
     },
+    $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }))
 vi.mock('@/lib/auth', () => ({
@@ -36,7 +38,8 @@ const mockedFindGuide = vi.mocked(prisma.guide.findUnique)
 const mockedCount = vi.mocked(prisma.guidePhoto.count)
 const mockedCreate = vi.mocked(prisma.guidePhoto.create)
 const mockedFindFirst = vi.mocked(prisma.guidePhoto.findFirst)
-const mockedDelete = vi.mocked(prisma.guidePhoto.delete)
+const mockedDeleteMany = vi.mocked(prisma.guidePhoto.deleteMany)
+const mockedTransaction = vi.mocked(prisma.$transaction)
 
 const PHOTO_URL = 'https://x.supabase.co/storage/v1/object/public/gallery/user_1/abc.png'
 
@@ -63,7 +66,11 @@ beforeEach(() => {
       ({ id: 'photo_1', ...args.data })) as never
   )
   mockedFindFirst.mockResolvedValue({ id: 'photo_1', guideId: 'guide_1', url: PHOTO_URL } as never)
-  mockedDelete.mockResolvedValue({} as never)
+  mockedDeleteMany.mockResolvedValue({ count: 1 } as never)
+  vi.mocked(prisma.$queryRaw).mockResolvedValue([] as never)
+  // Interactive transaction: run the callback against the same mocked client.
+  mockedTransaction.mockImplementation((async (fn: (tx: typeof prisma) => Promise<unknown>) =>
+    fn(prisma)) as never)
   mockUpload.mockResolvedValue({ error: null })
   mockRemove.mockResolvedValue({ error: null })
   mockGetPublicUrl.mockImplementation((path: string) => ({
@@ -119,6 +126,18 @@ describe('POST /api/guides/gallery', () => {
     expect(res.status).toBe(200)
   })
 
+  it('rejects and cleans up when a concurrent upload wins the race to the cap', async () => {
+    // Pre-check sees 9, but by the time the transactional re-check runs a
+    // parallel request has inserted the 10th photo.
+    mockedCount.mockResolvedValueOnce(9).mockResolvedValueOnce(10)
+    const res = await POST(postWith(fileOf('image/png')) as never)
+    expect(res.status).toBe(400)
+    expect(mockedCreate).not.toHaveBeenCalled()
+    // The already-uploaded object is removed again.
+    const [path] = mockUpload.mock.calls[0]
+    expect(mockRemove).toHaveBeenCalledWith([path])
+  })
+
   it('uploads to a unique path under the user and stores a GuidePhoto row', async () => {
     const res = await POST(postWith(fileOf('image/png')) as never)
     expect(res.status).toBe(200)
@@ -151,13 +170,13 @@ describe('DELETE /api/guides/gallery', () => {
     mockedGetUser.mockResolvedValue(null as never)
     const res = await DELETE(deleteWith('photo_1'))
     expect(res.status).toBe(401)
-    expect(mockedDelete).not.toHaveBeenCalled()
+    expect(mockedDeleteMany).not.toHaveBeenCalled()
   })
 
   it('returns 400 when no photo id is given', async () => {
     const res = await DELETE(deleteWith())
     expect(res.status).toBe(400)
-    expect(mockedDelete).not.toHaveBeenCalled()
+    expect(mockedDeleteMany).not.toHaveBeenCalled()
   })
 
   it("returns 404 for another guide's photo (scoped lookup)", async () => {
@@ -167,14 +186,21 @@ describe('DELETE /api/guides/gallery', () => {
     expect(mockedFindFirst).toHaveBeenCalledWith({
       where: { id: 'photo_of_someone_else', guideId: 'guide_1' },
     })
-    expect(mockedDelete).not.toHaveBeenCalled()
+    expect(mockedDeleteMany).not.toHaveBeenCalled()
+    expect(mockRemove).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 when a concurrent delete already removed the row', async () => {
+    mockedDeleteMany.mockResolvedValue({ count: 0 } as never)
+    const res = await DELETE(deleteWith('photo_1'))
+    expect(res.status).toBe(404)
     expect(mockRemove).not.toHaveBeenCalled()
   })
 
   it('deletes the row and removes the storage object', async () => {
     const res = await DELETE(deleteWith('photo_1'))
     expect(res.status).toBe(200)
-    expect(mockedDelete).toHaveBeenCalledWith({ where: { id: 'photo_1' } })
+    expect(mockedDeleteMany).toHaveBeenCalledWith({ where: { id: 'photo_1' } })
     expect(mockRemove).toHaveBeenCalledWith(['user_1/abc.png'])
   })
 })

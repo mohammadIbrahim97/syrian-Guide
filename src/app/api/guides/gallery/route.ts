@@ -26,6 +26,13 @@ function storagePath(url: string): string | null {
   return pathname.slice(i + marker.length);
 }
 
+function capExceeded() {
+  return NextResponse.json(
+    { error: `You can upload up to ${MAX_PHOTOS} photos. Remove one to add another.` },
+    { status: 400 }
+  );
+}
+
 export async function POST(request: NextRequest) {
   const user = await getUser();
   if (!user) {
@@ -53,14 +60,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Image too large (max 5 MB)" }, { status: 413 });
   }
 
-  // Server-side cap — the UI hides the add button at the limit, but the
-  // count here is the authority.
+  // Fast pre-check so an over-cap upload is rejected before the file
+  // transfer; the transactional re-check below is the authority.
   const count = await prisma.guidePhoto.count({ where: { guideId: guide.id } });
   if (count >= MAX_PHOTOS) {
-    return NextResponse.json(
-      { error: `You can upload up to ${MAX_PHOTOS} photos. Remove one to add another.` },
-      { status: 400 }
-    );
+    return capExceeded();
   }
 
   const admin = createAdminClient();
@@ -77,9 +81,20 @@ export async function POST(request: NextRequest) {
   // Unique path per photo — no upsert, no cache-buster needed.
   const { data: pub } = admin.storage.from(BUCKET).getPublicUrl(path);
 
-  const photo = await prisma.guidePhoto.create({
-    data: { guideId: guide.id, url: pub.publicUrl },
+  // Count + create under a per-guide row lock so concurrent uploads can't
+  // race past the cap between the check and the insert.
+  const photo = await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "Guide" WHERE id = ${guide.id} FOR UPDATE`;
+    const current = await tx.guidePhoto.count({ where: { guideId: guide.id } });
+    if (current >= MAX_PHOTOS) return null;
+    return tx.guidePhoto.create({ data: { guideId: guide.id, url: pub.publicUrl } });
   });
+
+  if (!photo) {
+    // Lost the race — drop the object we just uploaded.
+    await admin.storage.from(BUCKET).remove([path]);
+    return capExceeded();
+  }
 
   return NextResponse.json({ id: photo.id, url: photo.url });
 }
@@ -108,8 +123,12 @@ export async function DELETE(request: NextRequest) {
 
   // Row first, then the object (best-effort): if the Storage remove fails we
   // leave an invisible orphan object, never a live row pointing at a deleted
-  // image.
-  await prisma.guidePhoto.delete({ where: { id: photo.id } });
+  // image. deleteMany so a concurrent delete of the same photo yields
+  // count 0 (→ 404) instead of an unhandled P2025 throw (→ 500).
+  const { count } = await prisma.guidePhoto.deleteMany({ where: { id: photo.id } });
+  if (count === 0) {
+    return NextResponse.json({ error: "Photo not found" }, { status: 404 });
+  }
 
   const path = storagePath(photo.url);
   if (path) {

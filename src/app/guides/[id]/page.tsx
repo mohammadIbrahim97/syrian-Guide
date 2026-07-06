@@ -116,7 +116,7 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
                       <img
                         key={photo.id}
                         src={photo.url}
-                        alt={`Past tour with ${guide.user.name}`}
+                        alt={guide.user.name ? `Past tour with ${guide.user.name}` : 'Past tour photo'}
                         loading="lazy"
                         style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '12px', display: 'block', border: '1px solid rgba(0,0,0,0.06)' }}
                       />
