@@ -9,6 +9,7 @@ import NavActions from '@/components/NavActions';
 import AvailabilityManager from '@/components/AvailabilityManager';
 import BookingStatusBadge from '@/components/BookingStatusBadge';
 import ProfilePhotoCard from '@/components/ProfilePhotoCard';
+import CoverPhotoCard from '@/components/CoverPhotoCard';
 import TourGalleryCard from '@/components/TourGalleryCard';
 
 const cardStyle: React.CSSProperties = {
@@ -98,6 +99,8 @@ export default async function GuideDashboardPage() {
           View your public profile →
         </Link>
       </div>
+
+      <CoverPhotoCard currentCover={guide.coverImage} />
 
       <ProfilePhotoCard currentImage={user.image} name={user.name} />
 

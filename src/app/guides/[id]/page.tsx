@@ -45,9 +45,13 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
       </header>
 
       <main style={{ backgroundColor: 'var(--neutral-light)', paddingBottom: 'var(--sz-80)' }}>
-        {/* Large Cover Image Header */}
+        {/* Large Cover Image Header — the guide's cover photo, or the brand gradient */}
         <section style={{ height: '400px', backgroundColor: 'var(--brand-indigo)', position: 'relative' }}>
-           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))', opacity: 0.8 }}></div>
+           {guide.coverImage ? (
+             <img src={guide.coverImage} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+           ) : (
+             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))', opacity: 0.8 }}></div>
+           )}
         </section>
 
         {/* Content Area */}

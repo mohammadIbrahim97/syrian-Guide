@@ -16,5 +16,6 @@ export const publicGuideSelect = {
   rating: true,
   reviewCount: true,
   isVerified: true,
+  coverImage: true,
   user: { select: { name: true, image: true } },
 } satisfies Prisma.GuideSelect;

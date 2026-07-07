@@ -17,6 +17,7 @@ interface Guide {
   rating: number;
   reviewCount: number;
   isVerified: boolean;
+  coverImage: string | null;
   user: {
     name: string | null;
     image: string | null;
@@ -238,7 +239,16 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                         <span style={{ fontSize: '18px', color: 'var(--neutral-gray)' }}>♡</span>
                       </div>
 
-                      <div className="wl-card-img" style={{ background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))', width: '100%', height: '100%' }} />
+                      <div
+                        className="wl-card-img"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          ...(guide.coverImage
+                            ? { backgroundImage: `url(${guide.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                            : { background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))' }),
+                        }}
+                      />
 
                       <div className="wl-card-avatar-container">
                         <Avatar image={guide.user.image} name={guide.user.name} fontSize={20} />
