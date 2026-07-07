@@ -15,7 +15,10 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
 
   const guide = await prisma.guide.findUnique({
     where: { id },
-    include: { user: true }
+    include: {
+      user: true,
+      photos: { orderBy: { createdAt: 'asc' }, select: { id: true, url: true } }
+    }
   });
 
   if (!guide) return notFound();
@@ -102,6 +105,25 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
                   <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.city}</div>
                 </div>
               </div>
+
+              {/* Tour Gallery (issue #26) — hidden when the guide has no photos */}
+              {guide.photos.length > 0 && (
+                <>
+                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '32px 0' }}></div>
+                  <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>Photos from past tours</h2>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                    {guide.photos.map(photo => (
+                      <img
+                        key={photo.id}
+                        src={photo.url}
+                        alt={guide.user.name ? `Past tour with ${guide.user.name}` : 'Past tour photo'}
+                        loading="lazy"
+                        style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '12px', display: 'block', border: '1px solid rgba(0,0,0,0.06)' }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
             </div>
 

@@ -59,11 +59,27 @@ model Guide {
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings          Booking[]
   availabilitySlots AvailabilitySlot[]
+  photos            GuidePhoto[]
 }
 
 enum GuideType {
   STUDENT
   PROFESSIONAL
+}
+
+// ==========================================
+// Guide Tour Gallery
+// ==========================================
+
+model GuidePhoto {
+  id        String   @id @default(cuid())
+  guideId   String
+  url       String
+  createdAt DateTime @default(now())
+
+  guide Guide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@index([guideId])
 }
 
 // ==========================================
