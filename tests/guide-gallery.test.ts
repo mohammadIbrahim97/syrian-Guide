@@ -104,8 +104,13 @@ describe('POST /api/guides/gallery', () => {
     expect(mockUpload).not.toHaveBeenCalled()
   })
 
-  it('returns 413 for a file over 5 MB', async () => {
+  it('accepts a file between 5 and 7 MB', async () => {
     const res = await POST(postWith(fileOf('image/png', 6 * 1024 * 1024)) as never)
+    expect(res.status).toBe(200)
+  })
+
+  it('returns 413 for a file over 7 MB', async () => {
+    const res = await POST(postWith(fileOf('image/png', 8 * 1024 * 1024)) as never)
     expect(res.status).toBe(413)
     expect(mockUpload).not.toHaveBeenCalled()
   })

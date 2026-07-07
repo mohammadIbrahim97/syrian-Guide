@@ -9,7 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const BUCKET = "gallery";
 // Per-guide photo cap. A constant so it can be bumped later (e.g. per guide tier).
 const MAX_PHOTOS = 10;
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 7 * 1024 * 1024;
 const EXT: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     );
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "Image too large (max 5 MB)" }, { status: 413 });
+    return NextResponse.json({ error: "Image too large (max 7 MB)" }, { status: 413 });
   }
 
   // Fast pre-check so an over-cap upload is rejected before the file
