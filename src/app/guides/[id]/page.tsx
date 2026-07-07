@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
 import NavActions from '@/components/NavActions';
 import Avatar from '@/components/Avatar';
+import TourGallery from '@/components/TourGallery';
 import { getUser } from '@/lib/auth';
 
 export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -111,17 +112,7 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
                 <>
                   <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '32px 0' }}></div>
                   <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>Photos from past tours</h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
-                    {guide.photos.map(photo => (
-                      <img
-                        key={photo.id}
-                        src={photo.url}
-                        alt={guide.user.name ? `Past tour with ${guide.user.name}` : 'Past tour photo'}
-                        loading="lazy"
-                        style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '12px', display: 'block', border: '1px solid rgba(0,0,0,0.06)' }}
-                      />
-                    ))}
-                  </div>
+                  <TourGallery photos={guide.photos} guideName={guide.user.name} />
                 </>
               )}
 
