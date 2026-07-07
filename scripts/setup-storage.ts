@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { createAdminClient } from "../src/lib/supabase/admin";
 
-const BUCKETS = ["avatars", "gallery"];
+const BUCKETS = ["avatars", "gallery", "covers"];
 
 async function main() {
   const admin = createAdminClient();
