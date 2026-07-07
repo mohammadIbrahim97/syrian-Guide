@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp';
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = 7 * 1024 * 1024;
 const MAX_PHOTOS = 10;
 
 export default function TourGalleryCard({
@@ -29,7 +29,7 @@ export default function TourGalleryCard({
       return;
     }
     if (f.size > MAX_BYTES) {
-      setError('Image too large (max 5 MB).');
+      setError('Image too large (max 7 MB).');
       return;
     }
     setLoading(true);
@@ -73,7 +73,7 @@ export default function TourGalleryCard({
       <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 6px 0' }}>Tour gallery</h2>
       <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: '0 0 24px 0' }}>
         Show travelers what a day with you looks like — photos of your past tours appear on your
-        public profile. Up to {MAX_PHOTOS} photos ({photos.length}/{MAX_PHOTOS} used). JPEG, PNG, or WebP, up to 5&nbsp;MB each.
+        public profile. Up to {MAX_PHOTOS} photos ({photos.length}/{MAX_PHOTOS} used). JPEG, PNG, or WebP, up to 7&nbsp;MB each.
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
