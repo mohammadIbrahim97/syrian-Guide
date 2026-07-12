@@ -1,0 +1,241 @@
+/* ==========================================================================
+   Rihla — Local guides of the Levant (rihla/Rihla Home.dc.html)
+   Tokens + interactive styles for the Rihla-branded surfaces.
+   The home page is the first screen on this design; other pages still use
+   the SyriaGuide design system above.
+   ========================================================================== */
+
+:root {
+  --rihla-forest: #002623;   /* darkest green — header, hero, footer */
+  --rihla-pine: #054239;     /* deep green — accents, checkbox accent */
+  --rihla-teal: #428177;     /* links, Syria motif */
+  --rihla-gold: #b9a779;     /* brand accent, active chip */
+  --rihla-bronze: #988561;   /* muted gold — eyebrows, star, borders */
+  --rihla-cream: #edebe0;    /* page background, text on dark */
+  --rihla-mist: #a9c1bb;     /* secondary text on dark */
+  --rihla-wine: #6b1f2a;     /* primary CTA */
+  --rihla-wine-dark: #4a151e;
+  --rihla-ink: #161616;      /* text on light */
+  --rihla-ink-soft: #3d3a3b; /* secondary text on light */
+  --rihla-border-gold: rgba(185, 167, 121, 0.28);
+  --rihla-border-bronze: rgba(152, 133, 97, 0.32);
+  --rihla-font-display: var(--font-fraunces), 'Fraunces', Georgia, serif;
+  --rihla-font-body: 'Inter', system-ui, sans-serif;
+}
+
+.rihla-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--rihla-cream);
+  color: var(--rihla-ink);
+  font-family: var(--rihla-font-body);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.rihla-page ::selection {
+  background: var(--rihla-gold);
+  color: var(--rihla-forest);
+}
+
+.rihla-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  width: 100%;
+}
+
+@keyframes rihlaFadeUp {
+  0% { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: none; }
+}
+
+.rihla-fade-up {
+  opacity: 0;
+  animation: rihlaFadeUp 0.6s ease forwards;
+}
+
+/* Header / footer nav ----------------------------------------------------- */
+
+.rihla-nav-link {
+  text-decoration: none;
+  color: var(--rihla-mist);
+  transition: color 0.2s;
+  font-family: var(--rihla-font-body);
+  font-size: 0.92rem;
+}
+
+.rihla-nav-link:hover {
+  color: var(--rihla-cream);
+}
+
+/* Primary pill button (wine) ---------------------------------------------- */
+
+.rihla-btn {
+  font-family: var(--rihla-font-body);
+  font-weight: 600;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  line-height: 1;
+  background: var(--rihla-wine);
+  color: var(--rihla-cream);
+  box-shadow: 0 8px 18px -10px rgba(107, 31, 42, 0.8);
+}
+
+.rihla-btn:hover {
+  background: var(--rihla-wine-dark);
+  color: var(--rihla-cream);
+}
+
+/* Ghost pill button (empty state "Clear all filters") ---------------------- */
+
+.rihla-btn-ghost {
+  font-family: var(--rihla-font-body);
+  font-weight: 600;
+  font-size: 0.92rem;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid rgba(152, 133, 97, 0.55);
+  cursor: pointer;
+  background: transparent;
+  color: var(--rihla-pine);
+  transition: all 0.2s;
+}
+
+.rihla-btn-ghost:hover {
+  border-color: var(--rihla-pine);
+  background: rgba(5, 66, 57, 0.05);
+}
+
+/* Eyebrow label with leading rule ------------------------------------------ */
+
+.rihla-eyebrow {
+  font-family: var(--rihla-font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.rihla-eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* Hero theme chips ---------------------------------------------------------- */
+
+.rihla-chip {
+  border: 1px solid var(--rihla-border-gold);
+  color: var(--rihla-cream);
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  background: rgba(237, 235, 224, 0.04);
+  cursor: pointer;
+  font-family: var(--rihla-font-body);
+  font-weight: 400;
+  transition: all 0.2s;
+}
+
+.rihla-chip.active {
+  background: var(--rihla-gold);
+  color: var(--rihla-forest);
+  font-weight: 600;
+}
+
+/* Guide card ----------------------------------------------------------------- */
+
+.rihla-card {
+  background: #ffffff;
+  border: 1px solid var(--rihla-border-bronze);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(38, 15, 20, 0.05), 0 12px 32px -18px rgba(0, 38, 35, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.rihla-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -20px rgba(0, 38, 35, 0.55);
+}
+
+/* Sidebar "Clear all" text button ------------------------------------------- */
+
+.rihla-clear-link {
+  font-size: 0.78rem;
+  color: var(--rihla-ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: var(--rihla-font-body);
+}
+
+/* Hero + main layout responsiveness ------------------------------------------ */
+
+/* minmax(0, …) stops the search bar's intrinsic width from inflating the track */
+.rihla-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+}
+
+.rihla-results-layout {
+  display: flex;
+  gap: 2.5rem;
+  align-items: flex-start;
+}
+
+.rihla-filters {
+  width: 230px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 900px) {
+  .rihla-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  /* Let the headline wrap naturally on narrow screens instead of
+     overflowing on the designed two-line break */
+  .rihla-hero-title br {
+    display: none;
+  }
+  .rihla-header-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 820px) {
+  .rihla-results-layout {
+    flex-direction: column;
+  }
+  .rihla-filters {
+    width: 100%;
+    position: static;
+  }
+}

@@ -43,4 +43,30 @@ describe('GET /api/guides (guide search)', () => {
     const where = mockedFindMany.mock.calls[0][0]?.where as { AND: unknown[] }
     expect(where.AND).toContainEqual({ languages: { hasEvery: ['English', 'Arabic'] } })
   })
+
+  it('filters country with an exact match', async () => {
+    await GET(searchRequest('?country=Lebanon') as never)
+    const where = mockedFindMany.mock.calls[0][0]?.where as { AND: unknown[] }
+    expect(where.AND).toContainEqual({ country: 'Lebanon' })
+  })
+
+  it('expands a theme chip into keyword matches on bio and city', async () => {
+    await GET(searchRequest(`?theme=${encodeURIComponent('Desert & Bedouin')}`) as never)
+    const where = mockedFindMany.mock.calls[0][0]?.where as { AND: { OR: unknown[] }[] }
+    const themeCondition = where.AND[0]
+    expect(themeCondition.OR).toContainEqual({ bio: { contains: 'bedouin', mode: 'insensitive' } })
+    expect(themeCondition.OR).toContainEqual({ city: { contains: 'petra', mode: 'insensitive' } })
+  })
+
+  it('ignores an unknown theme label', async () => {
+    await GET(searchRequest('?theme=Nonexistent') as never)
+    const where = mockedFindMany.mock.calls[0][0]?.where
+    expect(where).toEqual({})
+  })
+
+  it('matches the country in free-text search', async () => {
+    await GET(searchRequest('?q=jordan') as never)
+    const where = mockedFindMany.mock.calls[0][0]?.where as { AND: { OR: unknown[] }[] }
+    expect(where.AND[0].OR).toContainEqual({ country: { contains: 'jordan', mode: 'insensitive' } })
+  })
 })

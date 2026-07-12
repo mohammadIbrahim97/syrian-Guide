@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Guide" ADD COLUMN "country" TEXT NOT NULL DEFAULT 'Syria',
+ADD COLUMN "tags" TEXT[] DEFAULT ARRAY[]::TEXT[];
