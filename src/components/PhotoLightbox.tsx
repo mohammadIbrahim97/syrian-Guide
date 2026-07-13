@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 // Full-screen click-to-enlarge photo viewer. Escape / backdrop / × to close;
 // when onNavigate is given and there's more than one photo, ‹ › or arrow keys
@@ -37,7 +38,7 @@ export default function PhotoLightbox({
     };
   }, [isOpen, onClose, onNavigate]);
 
-  if (index === null) return null;
+  if (index === null || typeof document === 'undefined') return null;
 
   const canNavigate = !!onNavigate && photos.length > 1;
 
@@ -48,7 +49,9 @@ export default function PhotoLightbox({
     lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
   };
 
-  return (
+  // Render into <body> so no transformed ancestor (e.g. the profile card's
+  // entrance animation) can trap our position:fixed overlay to its box.
+  return createPortal(
     <div
       onClick={onClose}
       role="dialog"
@@ -93,6 +96,7 @@ export default function PhotoLightbox({
           ›
         </button>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
