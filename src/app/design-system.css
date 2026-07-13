@@ -1318,9 +1318,11 @@ textarea.rihla-field {
 }
 
 /* Teal emphasis link with pine hover — bookings contact links, dashboard
-   "View your public profile", booking-success contact links */
+   "View your public profile", booking-success contact links.
+   Darkened teal (#33665e): brand --rihla-teal is only 3.8:1 on the cream
+   page background, below WCAG AA for small text. */
 .rihla-link {
-  color: var(--rihla-teal);
+  color: #33665e;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.2s;

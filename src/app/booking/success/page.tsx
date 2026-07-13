@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { getVerifiedBooking } from '@/lib/booking-confirmation';
 import GuidePhoneLink from '@/components/GuidePhoneLink';
 import RihlaHeader from '@/components/RihlaHeader';
-import RihlaFooter from '@/components/RihlaFooter';
 
 export default async function BookingSuccessPage({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
   const { session_id } = await searchParams;
@@ -128,8 +127,6 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
           </div>
         </div>
       </main>
-
-      <RihlaFooter />
     </div>
   );
 }

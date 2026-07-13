@@ -77,7 +77,7 @@ export default async function MyBookingsPage() {
                     alignItems: 'center',
                     gap: '1.25rem',
                     flexWrap: 'wrap',
-                    animationDelay: `${index * 80}ms`,
+                    animationDelay: `${(index % 3) * 80}ms`,
                   }}
                 >
                   <div
@@ -101,11 +101,9 @@ export default async function MyBookingsPage() {
                       {b.durationHours ? `${b.durationHours} hour(s)` : `${b.participants} person(s)`} · {b.guide.city}
                     </div>
                     {/* Contact is only revealed once the booking is paid, so guide contact
-                        details can't be harvested by starting checkouts without paying.
-                        The --brand-indigo override recolors GuidePhoneLink's inline
-                        var() to Rihla teal without touching the shared component. */}
+                        details can't be harvested by starting checkouts without paying. */}
                     {b.status === 'CONFIRMED' && (
-                      <div style={{ fontSize: '0.85rem', marginTop: '0.5rem', '--brand-indigo': 'var(--rihla-teal)' } as React.CSSProperties}>
+                      <div style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
                         <a href={`mailto:${b.guide.user.email}`} className="rihla-link">
                           {b.guide.user.email}
                         </a>
