@@ -4,7 +4,7 @@ import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
-import Avatar from '@/components/Avatar';
+import ProfilePhoto from '@/components/ProfilePhoto';
 import TourGallery from '@/components/TourGallery';
 import RihlaHeader from '@/components/RihlaHeader';
 import RihlaFooter from '@/components/RihlaFooter';
@@ -80,9 +80,7 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
 
               {/* Profile header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-                <div className="rihla-avatar" style={{ width: '96px', height: '96px', background: PHOTO_BG[motifCountry] }}>
-                  <Avatar image={guide.user.image} name={guide.user.name} fontSize={36} />
-                </div>
+                <ProfilePhoto image={guide.user.image} name={guide.user.name} background={PHOTO_BG[motifCountry]} />
                 <div style={{ minWidth: 0 }}>
                   <h1 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: 'clamp(1.9rem,4vw,2.4rem)', fontWeight: 500, lineHeight: 1.12, letterSpacing: '-0.01em', margin: 0, color: 'var(--rihla-ink)' }}>
                     {guide.user.name}
