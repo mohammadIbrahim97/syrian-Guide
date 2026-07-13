@@ -10,7 +10,8 @@
   --rihla-pine: #054239;     /* deep green — accents, checkbox accent */
   --rihla-teal: #428177;     /* links, Syria motif */
   --rihla-gold: #b9a779;     /* brand accent, active chip */
-  --rihla-bronze: #988561;   /* muted gold — eyebrows, star, borders */
+  --rihla-bronze: #988561;   /* muted gold — decorative icons, borders */
+  --rihla-bronze-text: #6f6142; /* darkened bronze that clears WCAG AA on cream/tint for small text */
   --rihla-cream: #edebe0;    /* page background, text on dark */
   --rihla-mist: #a9c1bb;     /* secondary text on dark */
   --rihla-wine: #6b1f2a;     /* primary CTA */
@@ -55,6 +56,33 @@
 .rihla-fade-up {
   opacity: 0;
   animation: rihlaFadeUp 0.6s ease forwards;
+}
+
+/* Respect reduced-motion: skip the entrance animation and, crucially, do not
+   leave content stuck at opacity:0 in environments where animations never run. */
+@media (prefers-reduced-motion: reduce) {
+  .rihla-fade-up {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* Visible keyboard focus. The hero search input/select suppress their native
+   outline for the pill look, so restore an explicit focus-visible ring for
+   every interactive control on the page (WCAG 2.4.7). */
+.rihla-page a:focus-visible,
+.rihla-page button:focus-visible,
+.rihla-page input:focus-visible,
+.rihla-page select:focus-visible {
+  outline: 2px solid var(--rihla-teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Ring the whole search pill when the text field or country select is focused */
+.rihla-search-bar:focus-within {
+  border-color: var(--rihla-teal);
+  box-shadow: 0 0 0 3px rgba(66, 129, 119, 0.35);
 }
 
 /* Header / footer nav ----------------------------------------------------- */

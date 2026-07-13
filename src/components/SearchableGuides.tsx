@@ -43,9 +43,10 @@ const PHOTO_BG: Record<string, string> = {
 };
 
 // Card tag chips alternate between teal and gold tints
+// (gold text is darkened to #6f6142 so small chip labels clear WCAG AA)
 const TAG_STYLES = [
   { bg: 'rgba(66,129,119,0.14)', color: '#054239' },
-  { bg: 'rgba(185,167,121,0.24)', color: '#988561' },
+  { bg: 'rgba(185,167,121,0.24)', color: '#6f6142' },
   { bg: 'rgba(66,129,119,0.14)', color: '#054239' },
 ];
 
@@ -55,7 +56,7 @@ function MotifIcon({ country }: { country: string }) {
   const style = { width: '78px', height: '78px', color: 'rgba(237,235,224,0.9)' };
   if (country === 'Lebanon') {
     return (
-      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={style} aria-hidden="true">
         <path d="M40 68V30" />
         <path d="M40 30l-16-6 16 2 16-6-16 4 16-2-16 8z" />
         <path d="M40 40l-20-8 20 3 20-8-20 5 20-3-20 11z" />
@@ -66,7 +67,7 @@ function MotifIcon({ country }: { country: string }) {
   }
   if (country === 'Jordan') {
     return (
-      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={style}>
+      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={style} aria-hidden="true">
         <path d="M20 72V34l6-8h28l6 8v38" />
         <path d="M28 72V44h10v28M42 72V44h10v28" />
         <path d="M33 30l7-9 7 9" />
@@ -76,7 +77,7 @@ function MotifIcon({ country }: { country: string }) {
     );
   }
   return (
-    <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.6" style={style}>
+    <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1.6" style={style} aria-hidden="true">
       <path d="M40 8c-6 6-6 14 0 18 6-4 6-12 0-18z" />
       <line x1="40" y1="26" x2="40" y2="34" />
       <path d="M26 72V44a14 14 0 0128 0v28" />
@@ -89,7 +90,7 @@ function MotifIcon({ country }: { country: string }) {
 // "Verified local guide" seal shown beside the hero copy
 function VerifiedSeal() {
   return (
-    <svg viewBox="0 0 200 200" style={{ width: 'min(240px,60vw)', height: 'auto' }} aria-label="Verified local seal">
+    <svg viewBox="0 0 200 200" style={{ width: 'min(240px,60vw)', height: 'auto' }} role="img" aria-label="Verified local guide seal">
       <defs>
         <path id="ring" d="M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0" />
       </defs>
@@ -122,9 +123,13 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
 
   // Debounce timer ref
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Monotonic request id: only the most recently issued fetch is allowed to
+  // commit its results, so a slow earlier response can't overwrite a newer one.
+  const requestSeqRef = useRef(0);
 
   // Fetch filtered results
   const fetchGuides = useCallback(async (query: string, countryValue: string, themeValue: string, langs: string[], price: string) => {
+    const requestId = ++requestSeqRef.current;
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -136,11 +141,12 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
 
       const res = await fetch(`/api/guides?${params.toString()}`);
       const data = await res.json();
+      if (requestId !== requestSeqRef.current) return; // a newer request superseded this one
       setGuides(data.guides);
     } catch (err) {
       console.error('Failed to fetch guides:', err);
     } finally {
-      setLoading(false);
+      if (requestId === requestSeqRef.current) setLoading(false);
     }
   }, []);
 
@@ -220,7 +226,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
               </p>
 
               {/* Search bar */}
-              <div style={{
+              <div className="rihla-search-bar" style={{
                 marginTop: '1.9rem',
                 display: 'flex',
                 alignItems: 'center',
@@ -231,7 +237,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                 padding: '0.5rem 0.6rem 0.5rem 1rem',
                 maxWidth: '560px',
               }}>
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ color: 'var(--rihla-bronze)', flex: '0 0 auto' }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" style={{ color: 'var(--rihla-bronze)', flex: '0 0 auto' }}>
                   <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.6" />
                   <path d="M12.5 12.5L16 16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
@@ -241,14 +247,14 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Where to? Try “Damascus”, “Petra”, “Byblos”…"
                   aria-label="Search destinations"
-                  style={{ border: 0, outline: 0, flex: 1, fontFamily: 'var(--rihla-font-body)', fontSize: '0.95rem', background: 'transparent', color: 'var(--rihla-ink)', minWidth: 0 }}
+                  style={{ border: 0, flex: 1, fontFamily: 'var(--rihla-font-body)', fontSize: '0.95rem', background: 'transparent', color: 'var(--rihla-ink)', minWidth: 0 }}
                 />
-                <span style={{ width: '1px', height: '22px', background: 'var(--rihla-border-bronze)', flex: '0 0 auto' }} />
+                <span aria-hidden="true" style={{ width: '1px', height: '22px', background: 'var(--rihla-border-bronze)', flex: '0 0 auto' }} />
                 <select
                   value={country}
                   onChange={e => setCountry(e.target.value)}
                   aria-label="Country"
-                  style={{ border: 0, background: 'transparent', fontFamily: 'var(--rihla-font-body)', fontSize: '0.9rem', color: 'var(--rihla-ink-soft)', cursor: 'pointer', outline: 'none' }}
+                  style={{ border: 0, background: 'transparent', fontFamily: 'var(--rihla-font-body)', fontSize: '0.9rem', color: 'var(--rihla-ink-soft)', cursor: 'pointer' }}
                 >
                   <option value="">All countries</option>
                   {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -262,6 +268,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                   <button
                     key={t.label}
                     onClick={() => toggleTheme(t.label)}
+                    aria-pressed={theme === t.label}
                     className={`rihla-chip${theme === t.label ? ' active' : ''}`}
                   >
                     {t.label}
@@ -283,7 +290,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem', marginBottom: '2.2rem' }}>
             <div>
-              <span className="rihla-eyebrow" style={{ color: 'var(--rihla-bronze)' }}>Discover</span>
+              <span className="rihla-eyebrow" style={{ color: 'var(--rihla-bronze-text)' }}>Discover</span>
               <h2 style={{
                 fontFamily: 'var(--rihla-font-display)',
                 fontSize: 'clamp(1.8rem,4vw,2.4rem)',
@@ -296,7 +303,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                 Meet your guide
               </h2>
             </div>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--rihla-ink-soft)', fontWeight: 500 }}>
+            <p role="status" aria-live="polite" style={{ margin: 0, fontSize: '0.82rem', color: 'var(--rihla-ink-soft)', fontWeight: 500 }}>
               {loading
                 ? 'Searching…'
                 : `${guides.length} guide${guides.length !== 1 ? 's' : ''} · Syria, Lebanon & Jordan`}
@@ -309,7 +316,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
             <aside className="rihla-filters">
               {activeFilterCount > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--rihla-bronze)', fontWeight: 600 }}>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--rihla-bronze-text)', fontWeight: 600 }}>
                     {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active
                   </span>
                   <button onClick={clearAllFilters} className="rihla-clear-link">Clear all</button>
@@ -378,11 +385,11 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                         }}>
                           {!guide.coverImage && <MotifIcon country={motifCountry} />}
                           <span style={{ position: 'absolute', left: '13.6px', bottom: '12px', color: 'var(--rihla-cream)', fontSize: '0.82rem', fontWeight: 500, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '0.4rem', textShadow: '0 1px 6px rgba(0,0,0,0.35)' }}>
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0a4 4 0 00-4 4c0 3 4 8 4 8s4-5 4-8a4 4 0 00-4-4zm0 5.5A1.5 1.5 0 116 2.5a1.5 1.5 0 010 3z" /></svg>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M6 0a4 4 0 00-4 4c0 3 4 8 4 8s4-5 4-8a4 4 0 00-4-4zm0 5.5A1.5 1.5 0 116 2.5a1.5 1.5 0 010 3z" /></svg>
                             {guide.city}, {guide.country}
                           </span>
                           {guide.isVerified && (
-                            <svg viewBox="0 0 52 52" style={{ position: 'absolute', top: '11.2px', right: '11.2px', width: '52px', height: '52px' }}>
+                            <svg viewBox="0 0 52 52" role="img" aria-label="Verified guide" style={{ position: 'absolute', top: '11.2px', right: '11.2px', width: '52px', height: '52px' }}>
                               <circle cx="26" cy="26" r="23" fill="none" stroke="#edebe0" strokeWidth="1.3" opacity="0.85" />
                               <circle cx="26" cy="26" r="18" fill="none" stroke="#edebe0" strokeWidth="0.7" strokeDasharray="1.3 3" opacity="0.7" />
                               <path d="M20 27l5 5 9-11" stroke="#edebe0" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -405,7 +412,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.7rem', paddingTop: '0.85rem', borderTop: '1px solid var(--rihla-border-bronze)' }}>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.9rem', color: 'var(--rihla-ink)' }}>
-                              <svg width="14" height="14" viewBox="0 0 16 16" fill="#988561"><path d="M8 1l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 11.9 3.8 14l.8-4.7L1.2 6l4.7-.7z" /></svg>
+                              <svg width="14" height="14" viewBox="0 0 16 16" fill="#988561" aria-hidden="true"><path d="M8 1l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 11.9 3.8 14l.8-4.7L1.2 6l4.7-.7z" /></svg>
                               {guide.rating.toFixed(1)} <small style={{ color: 'var(--rihla-ink-soft)', fontWeight: 400 }}>· {guide.reviewCount} trips</small>
                             </div>
                             <div style={{ fontSize: '0.86rem', color: 'var(--rihla-ink-soft)' }}>
