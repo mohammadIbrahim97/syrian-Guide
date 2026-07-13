@@ -1,14 +1,29 @@
 export const dynamic = 'force-dynamic';
 
 import React from 'react';
-import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import BookingWidget from '@/components/BookingWidget';
-import NavActions from '@/components/NavActions';
 import Avatar from '@/components/Avatar';
 import TourGallery from '@/components/TourGallery';
+import RihlaHeader from '@/components/RihlaHeader';
+import RihlaFooter from '@/components/RihlaFooter';
 import { getUser } from '@/lib/auth';
+
+// Band + avatar gradients per country — same values as the home guide cards
+const PHOTO_BG: Record<string, string> = {
+  Syria: 'radial-gradient(90% 120% at 20% 0%, #0a5148, transparent 60%), linear-gradient(150deg,#054239,#4a151e)',
+  Lebanon: 'radial-gradient(90% 120% at 80% 0%, #0a5148, transparent 55%), linear-gradient(150deg,#002623,#428177)',
+  Jordan: 'radial-gradient(90% 120% at 30% 0%, #7a2530, transparent 60%), linear-gradient(150deg,#4a151e,#988561)',
+};
+
+// Tag chips alternate between teal and gold tints
+// (gold text darkened to #6f6142 so small chip labels clear WCAG AA, as on home)
+const TAG_STYLES = [
+  { bg: 'rgba(66,129,119,0.14)', color: '#054239' },
+  { bg: 'rgba(185,167,121,0.24)', color: '#6f6142' },
+  { bg: 'rgba(66,129,119,0.14)', color: '#054239' },
+];
 
 export default async function GuideProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,104 +40,136 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
   if (!guide) return notFound();
 
   const isStudent = guide.guideType === 'STUDENT';
+  const firstName = guide.user.name?.split(' ')[0] ?? 'Guide';
+  const motifCountry = PHOTO_BG[guide.country] ? guide.country : 'Syria';
+  const chips = guide.tags.length > 0 ? guide.tags : guide.languages;
 
   return (
-    <div className="layout-wrapper" style={{ flexDirection: 'column' }}>
-      {/* Header */}
-      <header style={{ padding: 'var(--sz-16) var(--sz-32)', backgroundColor: 'var(--color-white)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div className="mock-nav" style={{ boxShadow: 'none', border: 'none', padding: '0' }}>
-            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '90px', width: 'auto', objectFit: 'contain', margin: '-20px 0 -20px -10px' }} />
-            </Link>
+    <div className="rihla-page">
+      <RihlaHeader />
 
-            <div style={{ flex: 1, padding: '0 40px' }}></div>
+      {/* Country band (or the guide's cover photo) the content shell pulls up over */}
+      <section style={{
+        position: 'relative',
+        height: '280px',
+        overflow: 'hidden',
+        borderBottom: '1px solid var(--rihla-border-gold)',
+        ...(guide.coverImage ? {} : { background: PHOTO_BG[motifCountry] }),
+      }}>
+        {guide.coverImage && (
+          <img src={guide.coverImage} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        )}
+        {/* Golden dune lines */}
+        <svg viewBox="0 0 1200 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.14, pointerEvents: 'none', width: '100%', height: '100%' }}>
+          <g fill="none" stroke="#b9a779" strokeWidth="1">
+            <path d="M-50 120 Q300 40 600 120 T1250 120" />
+            <path d="M-50 190 Q300 110 600 190 T1250 190" />
+            <path d="M-50 260 Q300 180 600 260 T1250 260" />
+            <path d="M-50 330 Q300 250 600 330 T1250 330" />
+            <path d="M-50 400 Q300 320 600 400 T1250 400" />
+          </g>
+        </svg>
+      </section>
 
-            <Link href="/" className="mock-nav-link" style={{ fontSize: '15px', fontWeight: 500, marginRight: 'var(--sz-16)' }}>All Guides</Link>
-            <NavActions />
-          </div>
-        </div>
-      </header>
+      <main style={{ flexGrow: 1, paddingBottom: '5rem' }}>
+        <div className="rihla-shell" style={{ marginTop: '-120px', position: 'relative', zIndex: 10 }}>
+          <div className="rihla-profile-columns" style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
 
-      <main style={{ backgroundColor: 'var(--neutral-light)', paddingBottom: 'var(--sz-80)' }}>
-        {/* Large Cover Image Header — the guide's cover photo, or the brand gradient */}
-        <section style={{ height: '400px', backgroundColor: 'var(--brand-indigo)', position: 'relative' }}>
-           {guide.coverImage ? (
-             <img src={guide.coverImage} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-           ) : (
-             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, var(--brand-indigo), var(--brand-coral))', opacity: 0.8 }}></div>
-           )}
-        </section>
+            {/* Main profile card */}
+            <div className="rihla-panel rihla-fade-up rihla-profile-main" style={{ flex: 1, minWidth: 0, padding: '2.5rem' }}>
 
-        {/* Content Area */}
-        <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 var(--sz-32)', marginTop: '-80px', position: 'relative', zIndex: 10 }}>
-          <div style={{ display: 'flex', gap: '48px', alignItems: 'flex-start' }}>
-
-            {/* Left Column (Details) */}
-            <div style={{ flex: 1, backgroundColor: 'white', borderRadius: '16px', padding: '48px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
-
-              {/* Profile Header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px' }}>
-                <div style={{ width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', flexShrink: 0 }}>
+              {/* Profile header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+                <div className="rihla-avatar" style={{ width: '96px', height: '96px', background: PHOTO_BG[motifCountry] }}>
                   <Avatar image={guide.user.image} name={guide.user.name} fontSize={36} />
                 </div>
-                <div>
-                  <h1 style={{ fontSize: '36px', fontWeight: 800, margin: '0 0 8px 0', color: 'var(--neutral-dark)' }}>{guide.user.name}</h1>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '16px', color: 'var(--neutral-gray)', fontWeight: 500 }}>
-                    <span>{isStudent ? 'Student guide' : 'Professional guide'} in {guide.city}</span>
-                    <span>•</span>
-                    <span style={{ color: 'var(--brand-sand)' }}>★ {guide.rating.toFixed(1)}</span>
-                    <span>({guide.reviewCount} reviews)</span>
+                <div style={{ minWidth: 0 }}>
+                  <h1 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: 'clamp(1.9rem,4vw,2.4rem)', fontWeight: 500, lineHeight: 1.12, letterSpacing: '-0.01em', margin: 0, color: 'var(--rihla-ink)' }}>
+                    {guide.user.name}
+                  </h1>
+                  <div style={{ fontSize: '0.92rem', color: 'var(--rihla-ink-soft)', marginTop: '0.25rem' }}>
+                    {isStudent ? 'Student guide' : 'Professional guide'} in {guide.city}, {guide.country}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+                    {guide.isVerified && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--rihla-pine)' }}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style={{ color: '#988561' }}>
+                          <path d="M8 1l1.9 1.2 2.2-.2.9 2 1.8 1.3-.6 2.1.6 2.1-1.8 1.3-.9 2-2.2-.2L8 15l-1.9-1.2-2.2.2-.9-2L1.2 10.9l.6-2.1-.6-2.1L3 5.4l.9-2 2.2.2L8 1z" fill="currentColor" />
+                          <path d="M5.5 8.2l1.7 1.7 3.3-3.6" stroke="#054239" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Verified local guide
+                      </span>
+                    )}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.9rem', color: 'var(--rihla-ink)' }}>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="#988561" aria-hidden="true"><path d="M8 1l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 11.9 3.8 14l.8-4.7L1.2 6l4.7-.7z" /></svg>
+                      {guide.rating.toFixed(1)} <small style={{ color: 'var(--rihla-ink-soft)', fontWeight: 400 }}>· {guide.reviewCount} trips</small>
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '32px 0' }}></div>
+              <div style={{ borderTop: '1px solid var(--rihla-border-bronze)', margin: '2rem 0' }}></div>
 
-              {/* Bio Section */}
-              <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>About {guide.user.name?.split(' ')[0]}</h2>
-              <p style={{ fontSize: '16px', lineHeight: 1.8, color: 'var(--neutral-gray)', marginBottom: '32px', whiteSpace: 'pre-wrap' }}>
+              {/* Bio */}
+              <span className="rihla-eyebrow" style={{ color: 'var(--rihla-bronze-text)' }}>The guide</span>
+              <h2 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.6rem', fontWeight: 500, margin: '0.6rem 0 0.8rem 0', color: 'var(--rihla-ink)' }}>
+                About {firstName}
+              </h2>
+              <p style={{ fontSize: '1rem', lineHeight: 1.8, color: 'var(--rihla-ink-soft)', margin: '0 0 1.6rem 0', whiteSpace: 'pre-wrap' }}>
                 {guide.bio}
               </p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', backgroundColor: 'var(--neutral-light)', padding: '24px', borderRadius: '12px' }}>
+              {chips.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', margin: '0 0 1.6rem 0' }}>
+                  {chips.map((label, i) => (
+                    <span key={label} style={{ fontSize: '0.78rem', fontWeight: 500, padding: '0.32rem 0.75rem', borderRadius: '999px', background: TAG_STYLES[i % 3].bg, color: TAG_STYLES[i % 3].color, display: 'inline-flex', alignItems: 'center' }}>
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Fact grid */}
+              <div className="rihla-inset" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.4rem' }}>
                 {isStudent ? (
                   <div>
-                    <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>University</div>
-                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.university ?? '—'}</div>
+                    <div className="rihla-microlabel" style={{ marginBottom: '0.2rem' }}>University</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>{guide.university ?? '—'}</div>
                   </div>
                 ) : (
                   <div>
-                    <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Package Duration</div>
-                    <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.packageDuration ? `${guide.packageDuration / 60} hours` : '—'}</div>
+                    <div className="rihla-microlabel" style={{ marginBottom: '0.2rem' }}>Package duration</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>{guide.packageDuration ? `${guide.packageDuration / 60} hours` : '—'}</div>
                   </div>
                 )}
                 <div>
-                  <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Languages</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.languages.join(', ')}</div>
+                  <div className="rihla-microlabel" style={{ marginBottom: '0.2rem' }}>Languages</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>{guide.languages.join(', ')}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Group Size</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Up to {guide.maxGroupSize} people</div>
+                  <div className="rihla-microlabel" style={{ marginBottom: '0.2rem' }}>Group size</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>Up to {guide.maxGroupSize} {guide.maxGroupSize === 1 ? 'person' : 'people'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '14px', color: 'var(--neutral-gray)', marginBottom: '4px' }}>Location</div>
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>{guide.city}</div>
+                  <div className="rihla-microlabel" style={{ marginBottom: '0.2rem' }}>Location</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>{guide.city}, {guide.country}</div>
                 </div>
               </div>
 
               {/* Tour Gallery (issue #26) — hidden when the guide has no photos */}
               {guide.photos.length > 0 && (
                 <>
-                  <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '32px 0' }}></div>
-                  <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '16px' }}>Photos from past tours</h2>
+                  <div style={{ borderTop: '1px solid var(--rihla-border-bronze)', margin: '2rem 0' }}></div>
+                  <h2 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.6rem', fontWeight: 500, margin: '0 0 1rem 0', color: 'var(--rihla-ink)' }}>
+                    Photos from past tours
+                  </h2>
                   <TourGallery photos={guide.photos} guideName={guide.user.name} />
                 </>
               )}
 
             </div>
 
-            {/* Right Column (Booking Widget) */}
+            {/* Booking sidebar */}
             <BookingWidget
               guideId={guide.id}
               guideType={guide.guideType}
@@ -135,27 +182,10 @@ export default async function GuideProfilePage({ params }: { params: Promise<{ i
             />
 
           </div>
-        </section>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.1)', padding: 'var(--sz-48) var(--sz-32)', marginTop: 'auto', backgroundColor: 'var(--color-white)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '60px', width: 'auto', objectFit: 'contain', margin: '-10px 0 -10px -10px' }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-            <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>
-              <Link href="/impressum" style={{ color: 'var(--neutral-gray)' }}>Impressum</Link>
-              {' · '}
-              <Link href="/datenschutz" style={{ color: 'var(--neutral-gray)' }}>Datenschutz</Link>
-              {' · '}
-              <Link href="/agb" style={{ color: 'var(--neutral-gray)' }}>AGB</Link>
-            </p>
-            <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>© 2026 SyriaGuide. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <RihlaFooter />
     </div>
   );
 }

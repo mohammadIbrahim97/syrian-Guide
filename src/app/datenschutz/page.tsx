@@ -1,36 +1,26 @@
 import React from 'react';
-import Link from 'next/link';
+import RihlaHeader from '@/components/RihlaHeader';
+import RihlaFooter from '@/components/RihlaFooter';
 
 export const metadata = { title: 'Datenschutzerklärung — SyriaGuide' };
 
-const cardStyle: React.CSSProperties = {
-  width: '100%', maxWidth: '800px', backgroundColor: 'var(--color-white)',
-  borderRadius: '16px', padding: '48px', boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
-  border: '1px solid rgba(0,0,0,0.06)',
-};
-const h2Style: React.CSSProperties = { fontSize: '20px', fontWeight: 700, color: 'var(--neutral-dark)', marginTop: '32px', marginBottom: '12px' };
-const pStyle: React.CSSProperties = { fontSize: '15px', lineHeight: 1.7, color: 'var(--neutral-gray)', marginBottom: '16px' };
-const ulStyle: React.CSSProperties = { ...pStyle, paddingLeft: '20px' };
+const h2Style: React.CSSProperties = { fontFamily: 'var(--rihla-font-display)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--rihla-ink)', margin: '2rem 0 0.7rem 0' };
+const pStyle: React.CSSProperties = { fontSize: '0.92rem', lineHeight: 1.7, color: 'var(--rihla-ink-soft)', margin: '0 0 1rem 0' };
+const ulStyle: React.CSSProperties = { ...pStyle, paddingLeft: '1.25rem' };
+const strongStyle: React.CSSProperties = { color: 'var(--rihla-ink)' };
 
 export default function DatenschutzPage() {
   return (
-    <div className="layout-wrapper" style={{ flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="rihla-page">
       {/* TEMPLATE — vor Launch prüfen und Platzhalter ersetzen. Keine Rechtsberatung. */}
-
-      {/* Header */}
-      <header style={{ padding: 'var(--sz-16) var(--sz-32)', backgroundColor: 'var(--color-white)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '90px', width: 'auto', objectFit: 'contain', margin: '-20px 0 -20px -10px' }} />
-          </Link>
-        </div>
-      </header>
+      <RihlaHeader />
 
       {/* Content */}
-      <main style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: 'var(--sz-48) var(--sz-32)' }}>
-        <div style={cardStyle}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>Datenschutzerklärung</h1>
-          <p style={{ ...pStyle, marginBottom: '32px' }}>
+      <main className="rihla-legal-main" style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '3rem 24px' }}>
+        <div className="rihla-form-card" style={{ maxWidth: '800px' }}>
+          <span className="rihla-eyebrow" style={{ color: 'var(--rihla-bronze-text)' }}>Rechtliches</span>
+          <h1 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '2rem', fontWeight: 500, margin: '0.6rem 0 0.5rem 0', color: 'var(--rihla-ink)' }}>Datenschutzerklärung</h1>
+          <p style={{ ...pStyle, margin: '0 0 2rem 0' }}>
             Der Schutz Ihrer personenbezogenen Daten ist uns wichtig. Diese Datenschutzerklärung informiert Sie darüber, welche Daten wir bei der Nutzung von SyriaGuide verarbeiten, zu welchem Zweck dies geschieht und welche Rechte Ihnen zustehen.
           </p>
 
@@ -39,14 +29,14 @@ export default function DatenschutzPage() {
             Verantwortlicher für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung (DSGVO) ist:
           </p>
           <p style={pStyle}>
-            <strong>[PLATZHALTER: Vollständiger Name / Firmenname]</strong><br />
+            <strong style={strongStyle}>[PLATZHALTER: Vollständiger Name / Firmenname]</strong><br />
             [PLATZHALTER: Anschrift]<br />
             E-Mail: [PLATZHALTER: E-Mail-Adresse]
           </p>
 
           <h2 style={h2Style}>2. Hosting</h2>
           <p style={pStyle}>
-            Diese Website sowie die zugehörige Infrastruktur werden bei <strong>[PLATZHALTER: Hosting-Anbieter nach Deployment]</strong> gehostet. Beim Aufruf unserer Website erhebt der Hosting-Anbieter automatisch sogenannte Server-Logfiles (u. a. IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, verwendeter Browser), die zur technischen Bereitstellung und Absicherung des Angebots erforderlich sind. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem stabilen und sicheren Betrieb).
+            Diese Website sowie die zugehörige Infrastruktur werden bei <strong style={strongStyle}>[PLATZHALTER: Hosting-Anbieter nach Deployment]</strong> gehostet. Beim Aufruf unserer Website erhebt der Hosting-Anbieter automatisch sogenannte Server-Logfiles (u. a. IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, verwendeter Browser), die zur technischen Bereitstellung und Absicherung des Angebots erforderlich sind. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem stabilen und sicheren Betrieb).
           </p>
 
           <h2 style={h2Style}>3. Datenbank und Authentifizierung (Supabase)</h2>
@@ -64,7 +54,7 @@ export default function DatenschutzPage() {
             Zur einheitlichen Darstellung der Typografie bindet diese Website derzeit Web-Schriftarten (Plus Jakarta Sans, Inter und Noto Sans Arabic) von den Servern von Google (Google Fonts) ein. Beim Aufruf einer Seite stellt Ihr Browser eine Verbindung zu einem Google-Server her und übermittelt dabei Ihre IP-Adresse an Google, damit die Schriftarten geladen und die Website in der vorgesehenen Gestaltung angezeigt werden können. Google kann diese Daten hierbei verarbeiten; Anbieter ist die Google Ireland Ltd., Gordon House, Barrow Street, Dublin 4, Irland, wobei eine Übermittlung in die USA nicht ausgeschlossen werden kann. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer einheitlichen Darstellung des Angebots).
           </p>
           <p style={pStyle}>
-            <strong>[PLATZHALTER: ggf. auf selbst-gehostete Schriftarten umstellen — siehe Datenschutzhinweis]</strong> Um diese Datenübermittlung an Google zu vermeiden, sollten die Schriftarten vor dem Start idealerweise lokal (selbst-gehostet) ausgeliefert werden.
+            <strong style={strongStyle}>[PLATZHALTER: ggf. auf selbst-gehostete Schriftarten umstellen — siehe Datenschutzhinweis]</strong> Um diese Datenübermittlung an Google zu vermeiden, sollten die Schriftarten vor dem Start idealerweise lokal (selbst-gehostet) ausgeliefert werden.
           </p>
 
           <h2 style={h2Style}>6. Cookies</h2>
@@ -93,22 +83,13 @@ export default function DatenschutzPage() {
             Wir speichern personenbezogene Daten nur so lange, wie dies für die Erbringung unserer Leistungen sowie zur Erfüllung gesetzlicher Aufbewahrungspflichten erforderlich ist. Nach Wegfall des jeweiligen Zwecks bzw. nach Ablauf gesetzlicher Aufbewahrungsfristen werden die Daten gelöscht oder anonymisiert.
           </p>
 
-          <p style={{ fontSize: '13px', color: 'var(--neutral-muted)', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--rihla-bronze-text)', margin: '2.5rem 0 0 0', paddingTop: '1.2rem', borderTop: '1px solid var(--rihla-border-bronze)' }}>
             Dieses Dokument ist eine Vorlage und wird vor dem offiziellen Start rechtlich geprüft.
           </p>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.1)', padding: 'var(--sz-24) var(--sz-32)', marginTop: 'auto', backgroundColor: 'var(--color-white)', textAlign: 'center' }}>
-        <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>
-          <Link href="/impressum" style={{ color: 'var(--neutral-gray)' }}>Impressum</Link>
-          {' · '}
-          <Link href="/agb" style={{ color: 'var(--neutral-gray)' }}>AGB</Link>
-          {' · '}
-          © 2026 SyriaGuide
-        </p>
-      </footer>
+      <RihlaFooter />
     </div>
   );
 }

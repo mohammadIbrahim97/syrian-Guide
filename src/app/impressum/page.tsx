@@ -1,42 +1,32 @@
 import React from 'react';
-import Link from 'next/link';
+import RihlaHeader from '@/components/RihlaHeader';
+import RihlaFooter from '@/components/RihlaFooter';
 
 export const metadata = { title: 'Impressum — SyriaGuide' };
 
-const cardStyle: React.CSSProperties = {
-  width: '100%', maxWidth: '800px', backgroundColor: 'var(--color-white)',
-  borderRadius: '16px', padding: '48px', boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
-  border: '1px solid rgba(0,0,0,0.06)',
-};
-const h2Style: React.CSSProperties = { fontSize: '20px', fontWeight: 700, color: 'var(--neutral-dark)', marginTop: '32px', marginBottom: '12px' };
-const h3Style: React.CSSProperties = { fontSize: '17px', fontWeight: 700, color: 'var(--neutral-dark)', marginTop: '20px', marginBottom: '10px' };
-const pStyle: React.CSSProperties = { fontSize: '15px', lineHeight: 1.7, color: 'var(--neutral-gray)', marginBottom: '16px' };
+const h2Style: React.CSSProperties = { fontFamily: 'var(--rihla-font-display)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--rihla-ink)', margin: '2rem 0 0.7rem 0' };
+const h3Style: React.CSSProperties = { fontFamily: 'var(--rihla-font-body)', fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)', margin: '1.2rem 0 0.6rem 0' };
+const pStyle: React.CSSProperties = { fontSize: '0.92rem', lineHeight: 1.7, color: 'var(--rihla-ink-soft)', margin: '0 0 1rem 0' };
+const strongStyle: React.CSSProperties = { color: 'var(--rihla-ink)' };
 
 export default function ImpressumPage() {
   return (
-    <div className="layout-wrapper" style={{ flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="rihla-page">
       {/* TEMPLATE — vor Launch prüfen und Platzhalter ersetzen. Keine Rechtsberatung. */}
-
-      {/* Header */}
-      <header style={{ padding: 'var(--sz-16) var(--sz-32)', backgroundColor: 'var(--color-white)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '90px', width: 'auto', objectFit: 'contain', margin: '-20px 0 -20px -10px' }} />
-          </Link>
-        </div>
-      </header>
+      <RihlaHeader />
 
       {/* Content */}
-      <main style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: 'var(--sz-48) var(--sz-32)' }}>
-        <div style={cardStyle}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>Impressum</h1>
-          <p style={{ ...pStyle, marginBottom: '32px' }}>
+      <main className="rihla-legal-main" style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '3rem 24px' }}>
+        <div className="rihla-form-card" style={{ maxWidth: '800px' }}>
+          <span className="rihla-eyebrow" style={{ color: 'var(--rihla-bronze-text)' }}>Rechtliches</span>
+          <h1 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '2rem', fontWeight: 500, margin: '0.6rem 0 0.5rem 0', color: 'var(--rihla-ink)' }}>Impressum</h1>
+          <p style={{ ...pStyle, margin: '0 0 2rem 0' }}>
             Diese Angaben dienen der Erfüllung der gesetzlichen Informationspflichten für geschäftsmäßige digitale Dienste in Deutschland.
           </p>
 
           <h2 style={h2Style}>Angaben gemäß § 5 DDG</h2>
           <p style={pStyle}>
-            <strong>[PLATZHALTER: Vollständiger Name / Firmenname]</strong><br />
+            <strong style={strongStyle}>[PLATZHALTER: Vollständiger Name / Firmenname]</strong><br />
             [PLATZHALTER: Straße und Hausnummer]<br />
             [PLATZHALTER: Postleitzahl und Ort]<br />
             [PLATZHALTER: Land]
@@ -44,12 +34,12 @@ export default function ImpressumPage() {
 
           <h2 style={h2Style}>Kontakt</h2>
           <p style={pStyle}>
-            E-Mail: <strong>[PLATZHALTER: E-Mail-Adresse]</strong>
+            E-Mail: <strong style={strongStyle}>[PLATZHALTER: E-Mail-Adresse]</strong>
           </p>
 
           <h2 style={h2Style}>Verantwortlich i.S.d. § 18 Abs. 2 MStV</h2>
           <p style={pStyle}>
-            <strong>[PLATZHALTER: Vollständiger Name der presserechtlich verantwortlichen Person]</strong><br />
+            <strong style={strongStyle}>[PLATZHALTER: Vollständiger Name der presserechtlich verantwortlichen Person]</strong><br />
             [PLATZHALTER: Anschrift, sofern abweichend von oben]
           </p>
 
@@ -65,22 +55,13 @@ export default function ImpressumPage() {
             Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seite verantwortlich. Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
           </p>
 
-          <p style={{ fontSize: '13px', color: 'var(--neutral-muted)', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--rihla-bronze-text)', margin: '2.5rem 0 0 0', paddingTop: '1.2rem', borderTop: '1px solid var(--rihla-border-bronze)' }}>
             Dieses Dokument ist eine Vorlage und wird vor dem offiziellen Start rechtlich geprüft.
           </p>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.1)', padding: 'var(--sz-24) var(--sz-32)', marginTop: 'auto', backgroundColor: 'var(--color-white)', textAlign: 'center' }}>
-        <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>
-          <Link href="/datenschutz" style={{ color: 'var(--neutral-gray)' }}>Datenschutz</Link>
-          {' · '}
-          <Link href="/agb" style={{ color: 'var(--neutral-gray)' }}>AGB</Link>
-          {' · '}
-          © 2026 SyriaGuide
-        </p>
-      </footer>
+      <RihlaFooter />
     </div>
   );
 }

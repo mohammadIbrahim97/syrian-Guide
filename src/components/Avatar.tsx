@@ -25,16 +25,17 @@ export default function Avatar({
       style={{
         width: "100%",
         height: "100%",
-        backgroundColor: "var(--brand-coral)",
-        color: "white",
+        background: "linear-gradient(150deg, var(--rihla-pine, #054239), var(--rihla-wine-dark, #4a151e))",
+        color: "var(--rihla-cream, #edebe0)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontWeight: 800,
+        fontFamily: "var(--rihla-font-display, Georgia, serif)",
+        fontWeight: 500,
         fontSize,
       }}
     >
-      {name ? name.substring(0, 1).toUpperCase() : "SG"}
+      {name ? name.substring(0, 1).toUpperCase() : "R"}
     </div>
   );
 }

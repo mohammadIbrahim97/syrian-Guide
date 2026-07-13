@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Avatar from '@/components/Avatar';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp';
 const MAX_BYTES = 5 * 1024 * 1024;
+
+// Avatar fallback gradient (Syria motif, per the dashboard design)
+const MOTIF_BG = 'radial-gradient(90% 120% at 20% 0%, #0a5148, transparent 60%), linear-gradient(150deg,#054239,#4a151e)';
 
 export default function ProfilePhotoCard({
   currentImage,
@@ -15,7 +17,6 @@ export default function ProfilePhotoCard({
   name: string | null;
 }) {
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,35 +84,41 @@ export default function ProfilePhotoCard({
   const shownImage = preview ?? currentImage;
 
   return (
-    <section style={{ backgroundColor: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)', marginBottom: '32px' }}>
-      <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 6px 0' }}>Profile photo</h2>
-      <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: '0 0 24px 0' }}>
+    <section className="rihla-panel" style={{ marginBottom: '1.5rem' }}>
+      <h2 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.35rem', fontWeight: 500, margin: '0 0 0.3rem 0', color: 'var(--rihla-ink)' }}>Profile photo</h2>
+      <p style={{ fontSize: '0.88rem', color: 'var(--rihla-ink-soft)', margin: '0 0 1.4rem 0' }}>
         A clear photo of yourself helps travelers trust and choose you. JPEG, PNG, or WebP, up to 5&nbsp;MB.
       </p>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-        <div style={{ width: '96px', height: '96px', borderRadius: '50%', overflow: 'hidden', border: '3px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', flexShrink: 0 }}>
-          <Avatar image={shownImage} name={name} fontSize={34} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.4rem', flexWrap: 'wrap' }}>
+        <div className="rihla-avatar" style={{ width: '88px', height: '88px', background: MOTIF_BG }}>
+          {shownImage ? (
+            <img src={shownImage} alt={name ?? 'Guide'} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          ) : (
+            <span style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '2.1rem', fontWeight: 500, color: 'var(--rihla-cream)' }}>
+              {(name ?? 'G').substring(0, 1).toUpperCase()}
+            </span>
+          )}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <input ref={inputRef} type="file" accept={ACCEPT} onChange={onPick} style={{ display: 'none' }} />
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <button type="button" onClick={() => inputRef.current?.click()} disabled={loading} style={{ border: '1px solid rgba(0,0,0,0.12)', background: 'white', borderRadius: '999px', padding: '8px 18px', fontSize: '14px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+          <div style={{ display: 'flex', gap: '0.7rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <label className="rihla-btn-ghost rihla-upload-label" style={{ position: 'relative', fontSize: '0.85rem', padding: '0.5rem 1.1rem', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+              <input type="file" accept={ACCEPT} onChange={onPick} disabled={loading} style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }} />
               Choose photo
-            </button>
+            </label>
             {file && (
-              <button type="button" onClick={onSave} disabled={loading} className="btn btn-primary" style={{ borderRadius: '999px', padding: '8px 20px', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer' }}>
+              <button type="button" onClick={onSave} disabled={loading} className="rihla-btn" style={{ fontSize: '0.85rem', padding: '0.5rem 1.2rem', lineHeight: 1.4, cursor: loading ? 'not-allowed' : 'pointer' }}>
                 {loading ? 'Saving…' : 'Save'}
               </button>
             )}
             {currentImage && !file && (
-              <button type="button" onClick={onRemove} disabled={loading} style={{ background: 'none', border: 'none', color: 'var(--neutral-gray)', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer' }}>
+              <button type="button" onClick={onRemove} disabled={loading} style={{ background: 'none', border: 'none', color: 'var(--rihla-ink-soft)', fontSize: '0.85rem', fontFamily: 'var(--rihla-font-body)', textDecoration: 'underline', cursor: loading ? 'not-allowed' : 'pointer' }}>
                 {loading ? 'Removing…' : 'Remove'}
               </button>
             )}
           </div>
-          {error && <div style={{ color: '#DC2626', fontSize: '13px' }}>{error}</div>}
+          {error && <div className="rihla-error" role="status" aria-live="polite">{error}</div>}
         </div>
       </div>
     </section>

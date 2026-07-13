@@ -1,35 +1,25 @@
 import React from 'react';
-import Link from 'next/link';
+import RihlaHeader from '@/components/RihlaHeader';
+import RihlaFooter from '@/components/RihlaFooter';
 
 export const metadata = { title: 'AGB — SyriaGuide' };
 
-const cardStyle: React.CSSProperties = {
-  width: '100%', maxWidth: '800px', backgroundColor: 'var(--color-white)',
-  borderRadius: '16px', padding: '48px', boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
-  border: '1px solid rgba(0,0,0,0.06)',
-};
-const h2Style: React.CSSProperties = { fontSize: '20px', fontWeight: 700, color: 'var(--neutral-dark)', marginTop: '32px', marginBottom: '12px' };
-const pStyle: React.CSSProperties = { fontSize: '15px', lineHeight: 1.7, color: 'var(--neutral-gray)', marginBottom: '16px' };
+const h2Style: React.CSSProperties = { fontFamily: 'var(--rihla-font-display)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--rihla-ink)', margin: '2rem 0 0.7rem 0' };
+const pStyle: React.CSSProperties = { fontSize: '0.92rem', lineHeight: 1.7, color: 'var(--rihla-ink-soft)', margin: '0 0 1rem 0' };
+const strongStyle: React.CSSProperties = { color: 'var(--rihla-ink)' };
 
 export default function AgbPage() {
   return (
-    <div className="layout-wrapper" style={{ flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="rihla-page">
       {/* TEMPLATE — vor Launch prüfen und Platzhalter ersetzen. Keine Rechtsberatung. */}
-
-      {/* Header */}
-      <header style={{ padding: 'var(--sz-16) var(--sz-32)', backgroundColor: 'var(--color-white)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.jpg" alt="SyriaGuide Logo" style={{ height: '90px', width: 'auto', objectFit: 'contain', margin: '-20px 0 -20px -10px' }} />
-          </Link>
-        </div>
-      </header>
+      <RihlaHeader />
 
       {/* Content */}
-      <main style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: 'var(--sz-48) var(--sz-32)' }}>
-        <div style={cardStyle}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '8px' }}>Allgemeine Geschäftsbedingungen (AGB)</h1>
-          <p style={{ ...pStyle, marginBottom: '32px' }}>
+      <main className="rihla-legal-main" style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '3rem 24px' }}>
+        <div className="rihla-form-card" style={{ maxWidth: '800px' }}>
+          <span className="rihla-eyebrow" style={{ color: 'var(--rihla-bronze-text)' }}>Rechtliches</span>
+          <h1 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '2rem', fontWeight: 500, margin: '0.6rem 0 0.5rem 0', color: 'var(--rihla-ink)' }}>Allgemeine Geschäftsbedingungen (AGB)</h1>
+          <p style={{ ...pStyle, margin: '0 0 2rem 0' }}>
             Diese Allgemeinen Geschäftsbedingungen (AGB) regeln die Nutzung der Plattform SyriaGuide durch Reisende und die Vermittlung von Stadtführungen und Touren durch registrierte Guides.
           </p>
 
@@ -50,7 +40,7 @@ export default function AgbPage() {
 
           <h2 style={h2Style}>§ 4 Stornierung</h2>
           <p style={pStyle}>
-            <strong>[PLATZHALTER: Stornierungsbedingungen — Fristen, Rückerstattungsregelungen sowie Sonderfälle wie ein Ausfall des Guides sind vor Launch verbindlich festzulegen und an dieser Stelle auszuformulieren.]</strong>
+            <strong style={strongStyle}>[PLATZHALTER: Stornierungsbedingungen — Fristen, Rückerstattungsregelungen sowie Sonderfälle wie ein Ausfall des Guides sind vor Launch verbindlich festzulegen und an dieser Stelle auszuformulieren.]</strong>
           </p>
 
           <h2 style={h2Style}>§ 5 Pflichten der Nutzer</h2>
@@ -60,7 +50,7 @@ export default function AgbPage() {
 
           <h2 style={h2Style}>§ 6 Haftung</h2>
           <p style={pStyle}>
-            <strong>[PLATZHALTER: rechtliche Prüfung erforderlich — Umfang und etwaige Beschränkungen der Haftung von SyriaGuide gegenüber Nutzern und Guides sind vor Launch durch eine rechtliche Prüfung festzulegen.]</strong>
+            <strong style={strongStyle}>[PLATZHALTER: rechtliche Prüfung erforderlich — Umfang und etwaige Beschränkungen der Haftung von SyriaGuide gegenüber Nutzern und Guides sind vor Launch durch eine rechtliche Prüfung festzulegen.]</strong>
           </p>
 
           <h2 style={h2Style}>§ 7 Schlussbestimmungen</h2>
@@ -68,22 +58,13 @@ export default function AgbPage() {
             Es gilt das Recht der Bundesrepublik Deutschland. Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen hiervon unberührt.
           </p>
 
-          <p style={{ fontSize: '13px', color: 'var(--neutral-muted)', marginTop: '40px', paddingTop: '20px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--rihla-bronze-text)', margin: '2.5rem 0 0 0', paddingTop: '1.2rem', borderTop: '1px solid var(--rihla-border-bronze)' }}>
             Dieses Dokument ist eine Vorlage und wird vor dem offiziellen Start rechtlich geprüft.
           </p>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid rgba(0,0,0,0.1)', padding: 'var(--sz-24) var(--sz-32)', marginTop: 'auto', backgroundColor: 'var(--color-white)', textAlign: 'center' }}>
-        <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: 0 }}>
-          <Link href="/impressum" style={{ color: 'var(--neutral-gray)' }}>Impressum</Link>
-          {' · '}
-          <Link href="/datenschutz" style={{ color: 'var(--neutral-gray)' }}>Datenschutz</Link>
-          {' · '}
-          © 2026 SyriaGuide
-        </p>
-      </footer>
+      <RihlaFooter />
     </div>
   );
 }
