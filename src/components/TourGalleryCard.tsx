@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp';
@@ -13,7 +13,6 @@ export default function TourGalleryCard({
   photos: { id: string; url: string }[];
 }) {
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -69,23 +68,23 @@ export default function TourGalleryCard({
   };
 
   return (
-    <section style={{ backgroundColor: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)', marginBottom: '32px' }}>
-      <h2 style={{ fontSize: '22px', fontWeight: 700, margin: '0 0 6px 0' }}>Tour gallery</h2>
-      <p style={{ fontSize: '14px', color: 'var(--neutral-gray)', margin: '0 0 24px 0' }}>
+    <section className="rihla-panel" style={{ marginBottom: '1.5rem' }}>
+      <h2 style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.35rem', fontWeight: 500, margin: '0 0 0.3rem 0', color: 'var(--rihla-ink)' }}>Tour gallery</h2>
+      <p style={{ fontSize: '0.88rem', color: 'var(--rihla-ink-soft)', margin: '0 0 1.4rem 0' }}>
         Show travelers what a day with you looks like — photos of your past tours appear on your
         public profile. Up to {MAX_PHOTOS} photos ({photos.length}/{MAX_PHOTOS} used). JPEG, PNG, or WebP, up to 7&nbsp;MB each.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem' }}>
         {photos.map((photo) => (
-          <div key={photo.id} style={{ position: 'relative', aspectRatio: '1', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+          <div key={photo.id} style={{ position: 'relative', aspectRatio: '1', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--rihla-border-bronze)' }}>
             <img src={photo.url} alt="Tour photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             <button
               type="button"
               onClick={() => onRemove(photo.id)}
               disabled={loading}
               aria-label="Remove photo"
-              style={{ position: 'absolute', top: '8px', right: '8px', width: '28px', height: '28px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '16px', lineHeight: 1, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ position: 'absolute', top: '8px', right: '8px', width: '28px', height: '28px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(0,38,35,0.65)', color: 'var(--rihla-cream)', fontSize: '16px', lineHeight: 1, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               ×
             </button>
@@ -93,20 +92,18 @@ export default function TourGalleryCard({
         ))}
 
         {!atLimit && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={loading}
-            style={{ aspectRatio: '1', borderRadius: '12px', border: '2px dashed rgba(0,0,0,0.15)', backgroundColor: 'var(--neutral-light)', color: 'var(--neutral-gray)', fontSize: '14px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+          <label
+            className="rihla-dashed rihla-upload-label rihla-gallery-add"
+            style={{ position: 'relative', aspectRatio: '1', fontSize: '0.85rem', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', transition: 'all 0.2s', opacity: loading ? 0.7 : 1 }}
           >
-            <span style={{ fontSize: '26px', lineHeight: 1 }}>+</span>
+            <input type="file" accept={ACCEPT} onChange={onPick} disabled={loading} style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }} />
+            <span aria-hidden="true" style={{ fontSize: '1.6rem', lineHeight: 1, color: 'var(--rihla-bronze)' }}>+</span>
             {loading ? 'Uploading…' : 'Add photo'}
-          </button>
+          </label>
         )}
       </div>
 
-      <input ref={inputRef} type="file" accept={ACCEPT} onChange={onPick} style={{ display: 'none' }} />
-      {error && <div style={{ color: '#DC2626', fontSize: '13px', marginTop: '16px' }}>{error}</div>}
+      {error && <div className="rihla-error" role="status" aria-live="polite" style={{ marginTop: '1rem' }}>{error}</div>}
     </section>
   );
 }

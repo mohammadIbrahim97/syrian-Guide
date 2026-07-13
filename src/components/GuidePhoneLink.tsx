@@ -11,7 +11,7 @@ export default function GuidePhoneLink({ phone }: { phone: string }) {
       href={`https://wa.me/${phone.replace(/\D/g, '')}`}
       target="_blank"
       rel="noreferrer"
-      style={{ color: 'var(--brand-indigo)', fontWeight: 600 }}
+      className="rihla-link"
     >
       📱 {phone}
     </a>

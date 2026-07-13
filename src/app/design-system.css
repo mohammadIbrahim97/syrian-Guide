@@ -1176,3 +1176,280 @@ h1, h2, h3, h4, h5, h6 {
     position: static;
   }
 }
+
+/* Rihla shared form & panel styles (ported screens) */
+
+/* Form input / select / textarea — Login, Forgot Password, Apply, Guide
+   Dashboard (availability), Guide Profile (booking widget).
+   Values lifted from the .dc.html files. Keyboard focus additionally gets the
+   global .rihla-page :focus-visible ring; never suppress outlines. */
+.rihla-field {
+  width: 100%;
+  font-family: var(--rihla-font-body);
+  font-size: 0.95rem;
+  padding: 0.72rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(152, 133, 97, 0.55);
+  background: #ffffff;
+  color: var(--rihla-ink);
+  box-sizing: border-box;
+}
+
+.rihla-field:focus {
+  outline: 2px solid var(--rihla-teal);
+  outline-offset: 1px;
+  border-color: var(--rihla-teal);
+}
+
+textarea.rihla-field {
+  resize: vertical;
+}
+
+/* Block label above a field — all form screens */
+.rihla-field-label {
+  display: block;
+  font-family: var(--rihla-font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--rihla-ink-soft);
+  margin-bottom: 0.4rem;
+}
+
+/* Centered white card (auth / apply / booking-success / legal). Screens set
+   max-width (440 / 560 / 800px) and any padding override inline, and add
+   .rihla-fade-up for the entrance animation where the design shows it. */
+.rihla-form-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--rihla-border-bronze);
+  border-radius: 22px;
+  padding: 3rem;
+  box-shadow: 0 1px 2px rgba(38, 15, 20, 0.05), 0 12px 32px -18px rgba(0, 38, 35, 0.4);
+  box-sizing: border-box;
+}
+
+/* Section panel on cream — dashboard sections (2rem), bookings rows (1.5rem
+   inline override), guide-profile main card (2.5rem inline override) */
+.rihla-panel {
+  background: #ffffff;
+  border: 1px solid var(--rihla-border-bronze);
+  border-radius: 22px;
+  padding: 2rem;
+  box-shadow: 0 1px 2px rgba(38, 15, 20, 0.05), 0 12px 32px -18px rgba(0, 38, 35, 0.4);
+  box-sizing: border-box;
+}
+
+/* Status badge pills — bookings list, dashboard table + slot list.
+   CONFIRMED / COMPLETED / "Open" -> confirmed; PENDING / "Booked" -> pending;
+   CANCELLED / unknown -> cancelled. */
+.rihla-badge {
+  font-family: var(--rihla-font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.32rem 0.75rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  text-transform: capitalize;
+}
+
+.rihla-badge-confirmed {
+  background: rgba(66, 129, 119, 0.14);
+  color: #054239;
+}
+
+/* Design shows #988561; darkened to #6f6142 so small text on the gold tint
+   clears WCAG AA (same precedent as the home card tag chips). */
+.rihla-badge-pending {
+  background: rgba(185, 167, 121, 0.24);
+  color: var(--rihla-bronze-text);
+}
+
+.rihla-badge-cancelled {
+  background: rgba(61, 58, 59, 0.12);
+  color: var(--rihla-ink-soft);
+}
+
+/* Inline error banner — login, apply, dashboard slot form, profile booking box */
+.rihla-error {
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  background: rgba(107, 31, 42, 0.12);
+  color: var(--rihla-wine);
+  font-size: 0.85rem;
+}
+
+/* Tiny uppercase label — profile fact grid, booking-success detail grid,
+   dashboard table headers. Design shows #988561; use the AA-safe bronze. */
+.rihla-microlabel {
+  font-family: var(--rihla-font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rihla-bronze-text);
+}
+
+/* Cream inset block inside a white card — profile facts, success details,
+   dashboard "no bookings" note (padding overridden inline where it differs) */
+.rihla-inset {
+  background: var(--rihla-cream);
+  border-radius: 14px;
+  padding: 1.4rem;
+}
+
+/* Dashed bronze box — dashboard gallery "Add photo" tile, booking-success
+   "Next step" notice. Layout/padding stays inline per screen. */
+.rihla-dashed {
+  border: 1px dashed rgba(152, 133, 97, 0.55);
+  background: rgba(237, 235, 224, 0.5);
+  border-radius: 14px;
+}
+
+/* Gold-ring avatar circle — bookings (56px), dashboard (88px), profile (96px).
+   Size and gradient background are inline per screen. */
+.rihla-avatar {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--rihla-gold);
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Teal emphasis link with pine hover — bookings contact links, dashboard
+   "View your public profile", booking-success contact links */
+.rihla-link {
+  color: var(--rihla-teal);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.rihla-link:hover {
+  color: var(--rihla-pine);
+}
+
+/* Let the existing .rihla-btn-ghost pill be used on anchors (booking-success
+   "View my bookings") and file-input labels (dashboard "Choose image/photo") */
+a.rihla-btn-ghost,
+label.rihla-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  line-height: 1;
+}
+
+/* guide-profile: stack the booking sidebar (static, full width) under the main
+   card on narrow screens; !important overrides the design's inline width/sticky */
+@media (max-width: 880px) {
+  .rihla-profile-columns {
+    flex-direction: column;
+  }
+  .rihla-profile-columns .rihla-booking-panel {
+    width: 100% !important;
+    position: static !important;
+  }
+}
+
+/* guide-profile: comfortable card padding on phones (main card sets 2.5rem inline) */
+@media (max-width: 640px) {
+  .rihla-profile-main {
+    padding: 1.6rem !important;
+  }
+  .rihla-booking-panel {
+    padding: 1.6rem;
+  }
+}
+
+/* Rihla My Bookings (src/app/bookings/page.tsx) — price/status column of each
+   booking row. Base look matches the design's right-aligned block; under 640px
+   the wrapped flex row would leave it floating at its natural width, so it
+   becomes a full-width spread row (price left, badge right). */
+.rihla-booking-total {
+  text-align: right;
+}
+
+.rihla-booking-total-price {
+  font-family: var(--rihla-font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--rihla-ink);
+}
+
+@media (max-width: 640px) {
+  .rihla-booking-total {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .rihla-booking-total-price {
+    margin-bottom: 0;
+  }
+}
+
+/* auth screens (login / forgot-password / reset-password): shrink the 3rem form-card padding on narrow phones so the 440px card content isn't cramped */
+@media (max-width: 480px) {
+  .rihla-auth-card {
+    padding: 2.2rem 1.5rem;
+  }
+}
+
+/* Rihla Apply — responsive overrides */
+@media (max-width: 640px) {
+  .rihla-apply-card {
+    padding: 2rem 1.4rem;
+  }
+}
+@media (max-width: 480px) {
+  .rihla-apply-type-row {
+    flex-direction: column;
+  }
+}
+
+/* dashboard (Rihla Guide Dashboard) */
+/* File-picker labels (cover, profile photo, gallery add tile): the file input
+   inside is visually hidden but stays tabbable — ring the label on keyboard focus. */
+.rihla-upload-label:focus-within {
+  outline: 2px solid var(--rihla-teal);
+  outline-offset: 2px;
+}
+
+/* Gallery "Add photo" dashed tile: text color kept in CSS (not inline) so the
+   design's hover recolor can apply */
+.rihla-gallery-add {
+  color: var(--rihla-ink-soft);
+}
+
+.rihla-gallery-add:hover {
+  border-color: var(--rihla-pine);
+  color: var(--rihla-pine);
+}
+
+/* Stack the availability slot form under 640px */
+@media (max-width: 640px) {
+  .rihla-slot-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .rihla-slot-form .rihla-field {
+    width: 100% !important; /* overrides the inline width:auto that sizes the desktop row */
+  }
+}
+
+/* Rihla booking-success: card padding (4rem 3rem per design) with a modest reduction under 640px so the centered card doesn't crowd small screens */
+.rihla-success-card { padding: 4rem 3rem; }
+@media (max-width: 640px) {
+  .rihla-success-card { padding: 2.75rem 1.4rem; }
+}
+
+/* Legal pages (Impressum / Datenschutz / AGB) — relax card + gutter padding under 640px */
+@media (max-width: 640px) {
+  main.rihla-legal-main { padding: 2rem 16px !important; }
+  main.rihla-legal-main .rihla-form-card { padding: 2rem 1.4rem; }
+}

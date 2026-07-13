@@ -137,117 +137,119 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
     }
   };
 
+  const reserveDisabled = loading || (!loadingSlots && slots.length === 0);
+
   return (
-    <div style={{
-      width: '380px', flexShrink: 0, position: 'sticky', top: '120px',
-      backgroundColor: 'white', borderRadius: '16px', padding: '32px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.06)',
-    }}>
-      <h3 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 8px 0' }}>
-        €{isStudent ? hourlyRate : packagePrice}{' '}
-        <span style={{ fontSize: '16px', color: 'var(--neutral-gray)', fontWeight: 500 }}>
+    <div
+      className="rihla-panel rihla-fade-up rihla-booking-panel"
+      style={{ width: '360px', flexShrink: 0, position: 'sticky', top: '24px', animationDelay: '0.1s' }}
+    >
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+        <span style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '2rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>
+          €{isStudent ? hourlyRate : packagePrice}
+        </span>
+        <span style={{ fontSize: '0.92rem', color: 'var(--rihla-ink-soft)' }}>
           {isStudent ? '/ hour' : '/ person'}
         </span>
-      </h3>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 600, color: 'var(--neutral-gray)' }}>
-        <span style={{ color: 'var(--brand-sand)' }}>★</span>
-        {rating.toFixed(1)} <span style={{ fontWeight: 400 }}>· {reviewCount} reviews</span>
+      </div>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, fontSize: '0.9rem', color: 'var(--rihla-ink)', marginTop: '0.2rem' }}>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="#988561" aria-hidden="true"><path d="M8 1l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 11.9 3.8 14l.8-4.7L1.2 6l4.7-.7z" /></svg>
+        {rating.toFixed(1)} <small style={{ color: 'var(--rihla-ink-soft)', fontWeight: 400 }}>· {reviewCount} trips</small>
       </div>
 
       {error && (
-        <div style={{
-          marginTop: '16px', padding: '10px 14px', borderRadius: '8px',
-          backgroundColor: '#FEE2E2', color: '#DC2626', fontSize: '13px',
-        }}>
+        <div role="alert" className="rihla-error" style={{ marginTop: '1rem' }}>
           {error}
         </div>
       )}
 
-      <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ marginTop: '1.4rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Date & time</label>
           {loadingSlots ? (
-            <div style={{ padding: '12px', fontSize: '14px', color: 'var(--neutral-gray)' }}>Loading available dates…</div>
+            <>
+              <span className="rihla-field-label">Date &amp; time</span>
+              <div role="status" aria-live="polite" style={{ padding: '0.72rem 0', fontSize: '0.85rem', color: 'var(--rihla-ink-soft)' }}>
+                Loading available dates…
+              </div>
+            </>
           ) : slots.length > 0 ? (
-            <select
-              value={slotId}
-              onChange={e => handleSelectSlot(e.target.value)}
-              style={{
-                width: '100%', padding: '12px 16px', borderRadius: '8px',
-                border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
-              }}
-            >
-              <option value="">Select an available slot</option>
-              {slots.map(slot => (
-                <option key={slot.id} value={slot.id}>
-                  {formatSlot(slot)}
-                </option>
-              ))}
-            </select>
+            <label className="rihla-field-label" style={{ marginBottom: 0 }}>
+              Date &amp; time
+              <select
+                value={slotId}
+                onChange={e => handleSelectSlot(e.target.value)}
+                className="rihla-field"
+                style={{ marginTop: '0.4rem' }}
+              >
+                <option value="">Select an available slot</option>
+                {slots.map(slot => (
+                  <option key={slot.id} value={slot.id}>
+                    {formatSlot(slot)}
+                  </option>
+                ))}
+              </select>
+            </label>
           ) : (
-            <p style={{
-              padding: '12px 16px', borderRadius: '8px', backgroundColor: 'var(--neutral-light)',
-              fontSize: '14px', color: 'var(--neutral-gray)', margin: 0,
-            }}>
-              No available dates yet — this guide hasn&apos;t opened their calendar. Check back soon.
-            </p>
+            <>
+              <span className="rihla-field-label">Date &amp; time</span>
+              <p className="rihla-inset" style={{ padding: '0.8rem 0.9rem', fontSize: '0.85rem', color: 'var(--rihla-ink-soft)', margin: 0 }}>
+                No available dates yet — this guide hasn&apos;t opened their calendar. Check back soon.
+              </p>
+            </>
           )}
         </div>
 
         {isStudent ? (
-          <div>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Hours</label>
+          <label className="rihla-field-label" style={{ marginBottom: 0 }}>
+            Hours
             <select
               value={durationHours}
               onChange={e => setDurationHours(Number(e.target.value))}
-              style={{
-                width: '100%', padding: '12px 16px', borderRadius: '8px',
-                border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
-              }}
+              className="rihla-field"
+              style={{ marginTop: '0.4rem' }}
             >
               {[...Array(maxHours)].map((_, i) => (
                 <option key={i} value={i + 1}>{i + 1} {i === 0 ? 'Hour' : 'Hours'}</option>
               ))}
             </select>
-          </div>
+          </label>
         ) : (
-          <div>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Guests</label>
+          <label className="rihla-field-label" style={{ marginBottom: 0 }}>
+            Guests
             <select
               value={participants}
               onChange={e => setParticipants(Number(e.target.value))}
-              style={{
-                width: '100%', padding: '12px 16px', borderRadius: '8px',
-                border: '1px solid rgba(0,0,0,0.1)', fontSize: '15px', backgroundColor: 'white',
-              }}
+              className="rihla-field"
+              style={{ marginTop: '0.4rem' }}
             >
               {[...Array(maxGroupSize)].map((_, i) => (
                 <option key={i} value={i + 1}>{i + 1} {i === 0 ? 'Person' : 'People'}</option>
               ))}
             </select>
-          </div>
+          </label>
         )}
 
         <button
           onClick={handleReserve}
-          disabled={loading || (!loadingSlots && slots.length === 0)}
-          className="btn btn-primary"
+          disabled={reserveDisabled}
+          className="rihla-btn"
           style={{
-            width: '100%', marginTop: '16px', padding: '16px', fontSize: '16px',
-            borderRadius: '8px', opacity: loading || (!loadingSlots && slots.length === 0) ? 0.7 : 1,
-            cursor: loading || (!loadingSlots && slots.length === 0) ? 'not-allowed' : 'pointer',
+            width: '100%', marginTop: '0.4rem', justifyContent: 'center',
+            fontSize: '0.95rem', padding: '0.85rem 1.4rem',
+            opacity: reserveDisabled ? 0.7 : 1,
+            cursor: reserveDisabled ? 'not-allowed' : 'pointer',
           }}
         >
-          {loading ? 'Redirecting to payment…' : !isLoggedIn ? 'Log in to Reserve' : 'Reserve'}
+          {loading ? 'Redirecting to payment…' : !isLoggedIn ? 'Log in to reserve' : 'Reserve'}
         </button>
 
-        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--neutral-gray)', margin: 0 }}>
+        <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--rihla-ink-soft)', margin: 0 }}>
           {isLoggedIn ? "You won't be charged yet" : 'Secure checkout via Stripe'}
         </p>
       </div>
 
-      <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', marginTop: '24px', paddingTop: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '15px', color: 'var(--neutral-gray)' }}>
+      <div style={{ borderTop: '1px solid var(--rihla-border-bronze)', marginTop: '1.4rem', paddingTop: '1.4rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', fontSize: '0.92rem', color: 'var(--rihla-ink-soft)' }}>
           <span>
             {isStudent
               ? `€${hourlyRate} × ${durationHours} hour${durationHours > 1 ? 's' : ''}`
@@ -255,16 +257,13 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
           </span>
           <span>€{basePrice.toFixed(2)}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '15px', color: 'var(--neutral-gray)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', fontSize: '0.92rem', color: 'var(--rihla-ink-soft)' }}>
           <span>Service fee</span>
           <span>€{serviceFee.toFixed(2)}</span>
         </div>
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', marginTop: '16px', paddingTop: '16px',
-          borderTop: '1px solid rgba(0,0,0,0.06)', fontSize: '16px', fontWeight: 700,
-        }}>
-          <span>Total</span>
-          <span>€{grandTotal.toFixed(2)}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '0.9rem', paddingTop: '0.9rem', borderTop: '1px solid var(--rihla-border-bronze)' }}>
+          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>Total</span>
+          <span style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>€{grandTotal.toFixed(2)}</span>
         </div>
       </div>
     </div>

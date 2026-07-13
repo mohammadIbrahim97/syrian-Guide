@@ -47,7 +47,7 @@ export default function TourGallery({
   const navBtnStyle: React.CSSProperties = {
     position: 'absolute', top: '50%', transform: 'translateY(-50%)',
     width: '48px', height: '48px', borderRadius: '50%', border: 'none',
-    backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: '28px',
+    backgroundColor: 'rgba(237,235,224,0.16)', color: 'var(--rihla-cream)', fontSize: '28px',
     lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
   };
 
@@ -60,13 +60,13 @@ export default function TourGallery({
             type="button"
             onClick={() => setActiveIndex(i)}
             aria-label={`Enlarge ${describe(i)}`}
-            style={{ padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: '12px', overflow: 'hidden', display: 'block' }}
+            style={{ padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', borderRadius: '14px', overflow: 'hidden', display: 'block' }}
           >
             <img
               src={photo.url}
               alt=""
               loading="lazy"
-              style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '12px', display: 'block', border: '1px solid rgba(0,0,0,0.06)' }}
+              style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '14px', display: 'block', border: '1px solid var(--rihla-border-bronze)' }}
             />
           </button>
         ))}
@@ -78,13 +78,13 @@ export default function TourGallery({
           role="dialog"
           aria-modal="true"
           aria-label="Tour photo viewer"
-          style={{ position: 'fixed', inset: 0, zIndex: 1000, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, backgroundColor: 'rgba(0,38,35,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
         >
           <button
             type="button"
             onClick={close}
             aria-label="Close"
-            style={{ position: 'absolute', top: '20px', right: '24px', width: '44px', height: '44px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: '26px', lineHeight: 1, cursor: 'pointer' }}
+            style={{ position: 'absolute', top: '20px', right: '24px', width: '44px', height: '44px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(237,235,224,0.16)', color: 'var(--rihla-cream)', fontSize: '26px', lineHeight: 1, cursor: 'pointer' }}
           >
             ×
           </button>
@@ -104,7 +104,7 @@ export default function TourGallery({
             src={photos[activeIndex].url}
             alt={describe(activeIndex)}
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}
+            style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: '14px', boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }}
           />
 
           {photos.length > 1 && (
