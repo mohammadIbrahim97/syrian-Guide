@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Inter:wght@100..900&family=Noto+Sans+Arabic:wght@100..900&display=swap');
 @import "tailwindcss";
 @import "./design-system.css";
+@import "./rihla.css";
 
 /* Default Next.js styles removed in favor of design-system.css */
