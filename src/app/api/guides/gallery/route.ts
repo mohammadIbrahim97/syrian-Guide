@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 const BUCKET = "gallery";
 // Per-guide photo cap. A constant so it can be bumped later (e.g. per guide tier).
@@ -37,6 +38,11 @@ export async function POST(request: NextRequest) {
   const user = await getUser();
   if (!user) {
     return NextResponse.json({ error: "Please log in" }, { status: 401 });
+  }
+
+  const rl = rateLimit("upload", user.id);
+  if (!rl.ok) {
+    return tooManyRequests(rl.retryAfterSeconds);
   }
 
   const guide = await prisma.guide.findUnique({ where: { userId: user.id } });

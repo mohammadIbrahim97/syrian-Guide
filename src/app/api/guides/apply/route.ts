@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +12,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Please log in to become a guide" }, { status: 401 });
     }
     const userId = user.id;
+
+    const rl = rateLimit("apply", userId);
+    if (!rl.ok) {
+      return tooManyRequests(rl.retryAfterSeconds);
+    }
 
     // A user may hold only one guide profile
     const existing = await prisma.guide.findUnique({ where: { userId } });

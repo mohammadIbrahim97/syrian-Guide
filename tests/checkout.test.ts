@@ -4,8 +4,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     availabilitySlot: { findUnique: vi.fn(), updateMany: vi.fn() },
-    booking: { create: vi.fn() },
+    booking: { create: vi.fn(), count: vi.fn() },
     $transaction: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }))
 vi.mock('@/lib/stripe', () => ({
@@ -24,7 +25,9 @@ const mockedGetUser = vi.mocked(getUser)
 const mockedFindSlot = vi.mocked(prisma.availabilitySlot.findUnique)
 const mockedClaimSlot = vi.mocked(prisma.availabilitySlot.updateMany)
 const mockedCreateBooking = vi.mocked(prisma.booking.create)
+const mockedCountBookings = vi.mocked(prisma.booking.count)
 const mockedTransaction = vi.mocked(prisma.$transaction)
+const mockedQueryRaw = vi.mocked(prisma.$queryRaw)
 const mockedStripeCreate = vi.mocked(stripe.checkout.sessions.create)
 
 const studentGuide = {
@@ -71,6 +74,10 @@ beforeEach(() => {
   mockedGetUser.mockResolvedValue({ id: 'user_1' } as never)
   mockedStripeCreate.mockResolvedValue({ id: 'cs_test_1', url: 'https://stripe.test/pay' } as never)
   mockedCreateBooking.mockResolvedValue({} as never)
+  // No unpaid bookings held by default, so the pending-booking cap is a no-op.
+  mockedCountBookings.mockResolvedValue(0 as never)
+  // The per-user row lock (SELECT ... FOR UPDATE) returns no meaningful rows.
+  mockedQueryRaw.mockResolvedValue([] as never)
   // The slot claim succeeds by default (one row updated)
   mockedClaimSlot.mockResolvedValue({ count: 1 } as never)
   // Run the transaction callback against the mocked prisma client
@@ -219,5 +226,29 @@ describe('POST /api/checkout (slot-consuming booking)', () => {
     const res = await POST(checkoutRequest({ guideId: 'guide_pro', slotId: 'slot_1' }) as never)
     expect(res.status).toBe(400)
     expect(mockedStripeCreate).not.toHaveBeenCalled()
+  })
+
+  it('rejects a checkout when the user is at the unpaid-booking cap, before creating a Stripe session', async () => {
+    // 3 == MAX_PENDING_BOOKINGS. The pre-check short-circuits the request.
+    mockedCountBookings.mockResolvedValue(3 as never)
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 2 }) as never)
+    expect(res.status).toBe(409)
+    expect(mockedStripeCreate).not.toHaveBeenCalled()
+    expect(mockedCreateBooking).not.toHaveBeenCalled()
+  })
+
+  it('enforces the cap inside the transaction even if the pre-check passed (race backstop)', async () => {
+    mockedFindSlot.mockResolvedValue(freeSlot(studentGuide) as never)
+    // Pre-check sees room (0); by the locked re-check a concurrent checkout has
+    // pushed the user to the cap (3).
+    mockedCountBookings.mockResolvedValueOnce(0 as never).mockResolvedValue(3 as never)
+
+    const res = await POST(checkoutRequest({ guideId: 'guide_student', slotId: 'slot_1', durationHours: 2 }) as never)
+    expect(res.status).toBe(409)
+    // The Stripe session is created before the transaction; the booking is not,
+    // and the slot is never claimed.
+    expect(mockedStripeCreate).toHaveBeenCalled()
+    expect(mockedClaimSlot).not.toHaveBeenCalled()
+    expect(mockedCreateBooking).not.toHaveBeenCalled()
   })
 })

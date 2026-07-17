@@ -4,6 +4,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { rateLimit, tooManyRequests } from "@/lib/rate-limit";
+
+// Most unpaid (PENDING) bookings one user may hold at once. Each checkout
+// claims its slot (isBooked=true) before payment and only frees it when the
+// Stripe session expires (~35 min later, via checkout.session.expired). Without
+// this cap a user could loop over every guide's slots and lock the whole
+// marketplace's inventory for free. Abandoned sessions expire and release their
+// slot, so a capped user recovers automatically.
+const MAX_PENDING_BOOKINGS = 3;
+
+function pendingLimitResponse() {
+  return NextResponse.json(
+    {
+      error:
+        "You have too many unpaid bookings. Please complete a payment or wait for one to expire before booking again.",
+    },
+    { status: 409 }
+  );
+}
 
 // Length of a slot like 09:00–13:00 in whole hours (rounded down)
 function slotLengthHours(startTime: string, endTime: string): number {
@@ -20,10 +39,25 @@ export async function POST(request: NextRequest) {
     }
     const userId = user.id;
 
+    const rl = rateLimit("checkout", userId);
+    if (!rl.ok) {
+      return tooManyRequests(rl.retryAfterSeconds);
+    }
+
     const { guideId, slotId, durationHours, participants } = await request.json();
 
     if (!guideId || !slotId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Fast pre-check: reject before creating a Stripe session (which costs API
+    // quota) when the user is already at the unpaid-booking cap. The
+    // transactional re-check below is the race-safe authority.
+    const pendingCount = await prisma.booking.count({
+      where: { userId, status: "PENDING" },
+    });
+    if (pendingCount >= MAX_PENDING_BOOKINGS) {
+      return pendingLimitResponse();
     }
 
     // The slot decides the date; the client can only pick from real availability
@@ -145,6 +179,19 @@ export async function POST(request: NextRequest) {
     // isBooked false -> true, and Booking.slotId is unique as a backstop.
     try {
       await prisma.$transaction(async (tx) => {
+        // Lock this user's row so concurrent checkouts for the same account
+        // serialize here; the pending re-check below then sees an accurate
+        // count and the cap can't be raced past. (Same technique the gallery
+        // photo cap uses via a FOR UPDATE row lock.)
+        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+
+        const pending = await tx.booking.count({
+          where: { userId, status: "PENDING" },
+        });
+        if (pending >= MAX_PENDING_BOOKINGS) {
+          throw new Error("PENDING_LIMIT");
+        }
+
         const claimed = await tx.availabilitySlot.updateMany({
           where: { id: slotId, isBooked: false },
           data: { isBooked: true },
@@ -168,6 +215,9 @@ export async function POST(request: NextRequest) {
         });
       });
     } catch (err) {
+      if (err instanceof Error && err.message === "PENDING_LIMIT") {
+        return pendingLimitResponse();
+      }
       if (err instanceof Error && err.message === "SLOT_TAKEN") {
         return NextResponse.json({ error: "This slot has just been booked" }, { status: 409 });
       }
