@@ -13,11 +13,11 @@ export default function RihlaFooter() {
           <small style={{ fontSize: '0.82rem' }}>Local guides of Syria, Lebanon &amp; Jordan</small>
         </div>
         <small style={{ fontSize: '0.82rem' }}>
-          <Link href="/impressum" style={{ color: 'var(--rihla-mist)' }}>Impressum</Link>
+          <Link href="/impressum" style={{ color: 'var(--rihla-mist)' }}>Legal Notice</Link>
           {' · '}
-          <Link href="/datenschutz" style={{ color: 'var(--rihla-mist)' }}>Datenschutz</Link>
+          <Link href="/datenschutz" style={{ color: 'var(--rihla-mist)' }}>Privacy</Link>
           {' · '}
-          <Link href="/agb" style={{ color: 'var(--rihla-mist)' }}>AGB</Link>
+          <Link href="/agb" style={{ color: 'var(--rihla-mist)' }}>Terms</Link>
           &nbsp;•&nbsp; © 2026 Rihla
         </small>
       </div>
