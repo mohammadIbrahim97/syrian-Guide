@@ -125,6 +125,10 @@ model Booking {
   guide Guide             @relation(fields: [guideId], references: [id], onDelete: Restrict)
   slot  AvailabilitySlot? @relation(fields: [slotId], references: [id], onDelete: Restrict)
   user  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Supports the per-user unpaid-booking cap: count(userId, status=PENDING) on
+  // every checkout.
+  @@index([userId, status])
 }
 
 enum BookingStatus {
