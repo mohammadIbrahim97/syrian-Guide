@@ -7,8 +7,9 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "migrate:deploy": "prisma migrate deploy",
     "setup:storage": "tsx scripts/setup-storage.ts"
   },
@@ -32,6 +33,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "prisma": "^7.8.0",
