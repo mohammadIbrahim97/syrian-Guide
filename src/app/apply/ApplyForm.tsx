@@ -202,7 +202,7 @@ export default function ApplyForm() {
                       onChange={e => setForm(f => ({ ...f, university: e.target.value }))} className="rihla-field" />
                   </label>
                   <label style={{ display: 'block' }}>
-                    <span className="rihla-field-label">Hourly rate (€)</span>
+                    <span className="rihla-field-label">Hourly rate ($)</span>
                     <input type="number" required min="1" step="1" value={form.hourlyRate} placeholder="10"
                       onChange={e => setForm(f => ({ ...f, hourlyRate: e.target.value }))} className="rihla-field" />
                   </label>
@@ -210,7 +210,7 @@ export default function ApplyForm() {
               ) : (
                 <>
                   <label style={{ display: 'block' }}>
-                    <span className="rihla-field-label">Package price per person (€)</span>
+                    <span className="rihla-field-label">Package price per person ($)</span>
                     <input type="number" required min="1" step="1" value={form.packagePrice} placeholder="25"
                       onChange={e => setForm(f => ({ ...f, packagePrice: e.target.value }))} className="rihla-field" />
                   </label>

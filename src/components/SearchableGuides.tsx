@@ -30,9 +30,9 @@ const ALL_LANGUAGES = ['English', 'Arabic', 'French', 'German', 'Spanish'];
 const COUNTRIES = ['Syria', 'Lebanon', 'Jordan'];
 const PRICE_OPTIONS = [
   { label: 'Any price', value: '' },
-  { label: 'Under €20', value: '20' },
-  { label: 'Under €50', value: '50' },
-  { label: 'Under €100', value: '100' },
+  { label: 'Under $20', value: '20' },
+  { label: 'Under $50', value: '50' },
+  { label: 'Under $100', value: '100' },
 ];
 
 // Card photo-area gradients per country (fallback when the guide has no cover photo)
@@ -417,7 +417,7 @@ export default function SearchableGuides({ initialGuides }: { initialGuides: Gui
                             </div>
                             <div style={{ fontSize: '0.86rem', color: 'var(--rihla-ink-soft)' }}>
                               from <b style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.05rem', color: 'var(--rihla-ink)', fontWeight: 600 }}>
-                                €{guide.guideType === 'STUDENT' ? guide.hourlyRate : guide.packagePrice}
+                                ${guide.guideType === 'STUDENT' ? guide.hourlyRate : guide.packagePrice}
                               </b> {guide.guideType === 'STUDENT' ? '/ hour' : '/ person'}
                             </div>
                           </div>

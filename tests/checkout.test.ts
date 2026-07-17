@@ -126,7 +126,7 @@ describe('POST /api/checkout (slot-consuming booking)', () => {
     const data = await res.json()
     expect(data.url).toBe('https://stripe.test/pay')
 
-    // Stripe: 3h × €10 = €30 (3000 cents) + €3 fee (300 cents)
+    // Stripe: 3h × $10 = $30 (3000 cents) + $3 fee (300 cents)
     const stripeArgs = mockedStripeCreate.mock.calls[0][0] as never as {
       line_items: { price_data: { unit_amount: number } }[]
       expires_at: number
