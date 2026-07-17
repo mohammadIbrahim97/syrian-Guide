@@ -118,7 +118,7 @@ export default async function MyBookingsPage() {
                     )}
                   </div>
                   <div className="rihla-booking-total">
-                    <div className="rihla-booking-total-price">€{b.totalPrice.toFixed(2)}</div>
+                    <div className="rihla-booking-total-price">${b.totalPrice.toFixed(2)}</div>
                     <BookingStatusBadge status={b.status} />
                   </div>
                 </div>

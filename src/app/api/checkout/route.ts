@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       line_items: [
         {
           price_data: {
-            currency: "eur",
+            currency: "usd",
             product_data: {
               name: `Private guide: ${guide.user.name}`,
               description,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         },
         {
           price_data: {
-            currency: "eur",
+            currency: "usd",
             product_data: {
               name: "Service Fee",
             },

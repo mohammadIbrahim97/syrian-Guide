@@ -167,7 +167,7 @@ export default async function GuideDashboardPage() {
                     <td style={{ padding: '0.75rem', whiteSpace: 'nowrap', color: 'var(--rihla-ink-soft)' }}>
                       {b.durationHours ? `${b.durationHours} hour(s)` : `${b.participants} person(s)`}
                     </td>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap', color: 'var(--rihla-ink)' }}>€{b.totalPrice.toFixed(2)}</td>
+                    <td style={{ padding: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap', color: 'var(--rihla-ink)' }}>${b.totalPrice.toFixed(2)}</td>
                     <td style={{ padding: '0.75rem' }}><BookingStatusBadge status={b.status} /></td>
                   </tr>
                 ))}

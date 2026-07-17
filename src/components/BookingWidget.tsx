@@ -146,7 +146,7 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
         <span style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '2rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>
-          €{isStudent ? hourlyRate : packagePrice}
+          ${isStudent ? hourlyRate : packagePrice}
         </span>
         <span style={{ fontSize: '0.92rem', color: 'var(--rihla-ink-soft)' }}>
           {isStudent ? '/ hour' : '/ person'}
@@ -252,18 +252,18 @@ export default function BookingWidget({ guideId, guideType, hourlyRate, packageP
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', fontSize: '0.92rem', color: 'var(--rihla-ink-soft)' }}>
           <span>
             {isStudent
-              ? `€${hourlyRate} × ${durationHours} hour${durationHours > 1 ? 's' : ''}`
-              : `€${packagePrice} × ${participants} person${participants > 1 ? 's' : ''}`}
+              ? `$${hourlyRate} × ${durationHours} hour${durationHours > 1 ? 's' : ''}`
+              : `$${packagePrice} × ${participants} person${participants > 1 ? 's' : ''}`}
           </span>
-          <span>€{basePrice.toFixed(2)}</span>
+          <span>${basePrice.toFixed(2)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem', fontSize: '0.92rem', color: 'var(--rihla-ink-soft)' }}>
           <span>Service fee</span>
-          <span>€{serviceFee.toFixed(2)}</span>
+          <span>${serviceFee.toFixed(2)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '0.9rem', paddingTop: '0.9rem', borderTop: '1px solid var(--rihla-border-bronze)' }}>
           <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>Total</span>
-          <span style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>€{grandTotal.toFixed(2)}</span>
+          <span style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>${grandTotal.toFixed(2)}</span>
         </div>
       </div>
     </div>

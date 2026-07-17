@@ -75,7 +75,7 @@ export default async function BookingSuccessPage({ searchParams }: { searchParam
                 <div>
                   <div className="rihla-microlabel" style={{ marginBottom: '0.15rem' }}>{confirmed ? 'Total paid' : 'Total'}</div>
                   <div style={{ fontFamily: 'var(--rihla-font-display)', fontSize: '1.05rem', fontWeight: 600, color: 'var(--rihla-ink)' }}>
-                    €{booking.totalPrice.toFixed(2)}
+                    ${booking.totalPrice.toFixed(2)}
                   </div>
                 </div>
                 <div>
